@@ -6,100 +6,26 @@ import { playAudio } from '../utils/audio'
 import Interview from '../components/Interview'
 import { useSpeechToText } from '../hooks/useSpeechToText'
 import Report from '../components/Report'
+import { endInterviewAPI, reportAPI, startInterviewAPI, submitAPI } from '../services/interview-service'
 
 const InterviewPage = () => {
     const [status, setStatus] = useState<string>(APP_CONSTANT.IDLE)
     const [sessionId, setSessionId] = useState<null | string>(null)
     const [question, setQuestion] = useState<string>("")
     const [report, setReport] = useState(null)
+    const [loading, setLoading] = useState(false)
 
+    const handleStartInterview = async (data, session_id) => {
+        console.log(data, session_id)
+        setLoading(true)
 
-
-    const fetchSessionId = async () => {
-        try {
-            const res = await axios.get(`${BASE_URL}/interview/start`)
-
-            if (!res) {
-                alert('fetch session id is failing')
-                return
-            }
-
-            return res.data
-        } catch (error) {
-            console.log(error)
-            alert('fetch session id is failing')
-        }
-
-        return null
-
-    }
-
-    const handleSubmit = async (payload) => {
-        try {
-            const res = await axios.post(`${BASE_URL}/interview/submit`, payload)
-
-            if (!res) {
-                alert('submit api is failing')
-                return
-            }
-
-            return res.data
-        } catch (error) {
-            console.log(error)
-            alert('submit api is failing')
-        }
-
-        return null
-    }
-
-    const handleReport = async (session) => {
-        try {
-            const res = await axios.get(`${BASE_URL}/interview/report/${session}`)
-
-            if (!res) {
-                alert('report api is failing')
-                return
-            }
-
-            return res.data
-        } catch (error) {
-            console.log(error)
-            alert('report api is failing')
-        }
-
-        return null
-    }
-
-    const handleEndInterview = async (session) => {
-        try {
-            const res = await axios.put(`${BASE_URL}/interview/end/${session}`)
-
-            if (!res) {
-                alert('end interview is failing')
-                return
-            }
-
-            return res.data
-        } catch (error) {
-            console.log(error)
-            alert('end interview is failing')
-        }
-
-        return null
-    }
-
-
-    const handleStartInterview = async () => {
-        // fetching session id
-        const data: any = await fetchSessionId()
-
-
-        setSessionId(data.session_id)
+        setSessionId(session_id)
         setQuestion(data.first_question)
         setStatus(APP_CONSTANT.INTRO)
 
         const introText = data.intro_text
         playAudio(introText, () => {
+            setLoading(false)
             setStatus(APP_CONSTANT.ASKING)
         })
     }
@@ -114,8 +40,9 @@ const InterviewPage = () => {
             "answer": finalText,
             "skip": false
         }
+        console.log(payload)
 
-        const data: any = await handleSubmit(payload)
+        const data: any = await submitAPI(payload)
 
         if (data.interviewEnded) {
             finishInterview()
@@ -129,16 +56,19 @@ const InterviewPage = () => {
     const { stopListening, startListening } = useSpeechToText(onAutoSubmit)
 
     const finishInterview = async () => {
+        setLoading(true)
         setStatus(APP_CONSTANT.COMPLETED)
 
-        const data: any = await handleReport(sessionId)
+        const data: any = await reportAPI(sessionId)
 
         if (!data) return
 
         setReport(data.result)
+        setLoading(false)
     }
 
     const handleSkip = async () => {
+        console.log(status)
         stopListening()
 
         const payload = {
@@ -147,9 +77,9 @@ const InterviewPage = () => {
             "skip": true
         }
 
-        const data: any = await handleSubmit(payload)
+        const data: any = await submitAPI(payload)
 
-        if (data.interviewEnd) {
+        if (data.interviewEnded) {
             finishInterview()
         } else {
             setQuestion(data.nextQuestion)
@@ -159,7 +89,7 @@ const InterviewPage = () => {
 
     const handleEnd = async () => {
         stopListening()
-        await handleEndInterview(sessionId)
+        await endInterviewAPI(sessionId)
         await finishInterview()
     }
 
@@ -174,13 +104,16 @@ const InterviewPage = () => {
     }, [status, question])
 
     return (
-        <div>
-            Interview page
+        <div className='main-container'>
+            {loading}
+            {loading && <div className="loader"></div>}
+
             {status === APP_CONSTANT.IDLE && <StartInterview onclick={handleStartInterview} />}
 
-            {status === APP_CONSTANT.ASKING || status === APP_CONSTANT.LISTENING && <Interview handleSkip={handleSkip} handleEnd={handleEnd} />}
+            {(status === APP_CONSTANT.ASKING || status === APP_CONSTANT.LISTENING) && <Interview handleSkip={handleSkip} handleEnd={handleEnd} status={status} />}
 
             {status === APP_CONSTANT.COMPLETED && <Report value={report} />}
+            {/* <Report value={report} /> */}
         </div>
     )
 }

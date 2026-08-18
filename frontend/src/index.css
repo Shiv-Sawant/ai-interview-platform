@@ -1,0 +1,187 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.main-container {
+    background-color: rgb(217, 217, 217);
+    width: 100vw;
+    height: 100vh;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.start_interview-card {
+    background-color: #fff;
+    width: 30%;
+    height: 70%;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.start_interview-card div {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.start_interview-card div input {
+    height: 40px;
+    padding: 0 1rem;
+    outline: none;
+}
+
+.start_interview-card button {
+    height: 40px;
+    background-color: rgb(40, 110, 230);
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.interview-container {
+    height: 100%;
+    width: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-content: space-between;
+    /* background-color: red; */
+}
+
+.bot-card,
+.user-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    height: 70%;
+    width: 400px;
+    overflow: hidden;
+}
+
+.bot-card img,
+.user-card img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+.interview-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.interview-actions button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    color: white;
+}
+
+.interview-actions button:first-child {
+    background-color: rgb(232, 139, 0);
+}
+
+.interview-actions button:last-child {
+    background-color: rgb(220, 5, 73);
+}
+
+.report-container {
+    padding: 2rem;
+    align-items: center;
+    display: flex;
+    gap: 2rem;
+    flex-direction: column;
+    /* background-color: red; */
+    width: 100%;
+    height: 100%;
+}
+
+.score-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 2rem;
+    /* background-color: white; */
+}
+
+.score-container div {
+    background-color: white;
+}
+
+.score-card{
+    height: 180px;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.detail-container{
+    background-color: white;
+    width: 100%;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 2rem;
+}
+
+.detail-container ul{
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* HTML: <div class="loader"></div> */
+.loader {
+    width: 40px;
+    height: 26px;
+    --c: no-repeat linear-gradient(#000 0 0);
+    background:
+        var(--c) 0 100%,
+        var(--c) 50% 100%,
+        var(--c) 100% 100%;
+    background-size: 8px calc(100% - 4px);
+    position: relative;
+}
+
+.loader:before {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #000;
+    left: 0;
+    top: 0;
+    animation:
+        l3-1 1.5s linear infinite alternate,
+        l3-2 0.75s cubic-bezier(0, 200, .8, 200) infinite;
+}
+
+@keyframes l3-1 {
+    100% {
+        left: calc(100% - 8px)
+    }
+}
+
+@keyframes l3-2 {
+    100% {
+        top: -0.1px
+    }
+}

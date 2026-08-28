@@ -3,8 +3,24 @@ from routers.route import router
 from fastapi.middleware.cors import CORSMiddleware
 from utils.interview_util import AppException
 from fastapi.responses import JSONResponse
+from database.db import create_tables
+from contextlib import asynccontextmanager
+from model.common_models import (
+    InterviewSessionDB,
+    InterviewQuestionDB,
+    InterviewAnswerDB,
+)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_tables()
+
+    yield
+
 
 app = FastAPI(
+    lifespan=lifespan,
     version="0.0.1",
     title="Ai Interview Platform",
     description="Ai Interview Platform using python and react",

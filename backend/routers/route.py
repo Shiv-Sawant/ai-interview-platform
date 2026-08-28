@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, status, Form, File, UploadFile
-from backend.services.interview_service import create_session, get_session, save_answer
-from model.answer_model import AnswerRequest, AnswerResponse
-from model.interview_model import (
+from fastapi import APIRouter, Depends, Form, File, UploadFile
+from services.interview_service import create_session, get_session, save_answer
+from schema.answer_schema import AnswerRequest, AnswerResponse
+from schema.interview_schema import (
     GenerateInterviewResponse,
     StartInterviewResponse,
     EndInterviewResponse,
@@ -16,6 +16,8 @@ from controller.interview_controller import (
     end_interview_controller,
     generate_report_controller,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
+from database.db import get_db
 
 router = APIRouter(prefix="/interview")
 
@@ -25,11 +27,10 @@ async def generate(
     job_title: str = Form(...),
     job_description: str = Form(...),
     resume: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
 ):
     return await generate_interview_controller(
-        job_title=job_title,
-        job_description=job_description,
-        resume=resume,
+        job_title=job_title, job_description=job_description, resume=resume, db=db
     )
 
 

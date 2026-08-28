@@ -1,6 +1,7 @@
 from services.interview_service import get_session
 from fastapi import status
-from model.interview_model import InterviewStatusEnum
+from schema.interview_schema import InterviewStatusEnum
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AppException(Exception):
@@ -13,8 +14,8 @@ class AppException(Exception):
         self.status_code = status_code
 
 
-def get_active_session(session_id: str):
-    session = get_session(session_id)
+def get_active_session(session_id: str, db: AsyncSession):
+    session = get_session(db, session_id)
 
     if not session or session.status == InterviewStatusEnum.COMPLETED:
         raise AppException(
@@ -25,8 +26,8 @@ def get_active_session(session_id: str):
     return session
 
 
-def get_completed_session(session_id: str):
-    session = get_session(session_id)
+async def get_completed_session(session_id: str, db: AsyncSession):
+    session = await get_session(db, session_id)
 
     if not session:
         raise AppException(

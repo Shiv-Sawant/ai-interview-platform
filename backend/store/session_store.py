@@ -1,4 +1,4 @@
 from typing import Dict
-from model.interview_model import InterviewSession
+from schema.interview_schema import InterviewSession
 
 SESSION_STORE: Dict[str, InterviewSession] = {}

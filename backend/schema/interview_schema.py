@@ -1,12 +1,6 @@
-from enum import Enum
 from typing import Optional, Any
 from pydantic import BaseModel
-
-
-class InterviewStatusEnum(str, Enum):
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-
+from utils.interview_util import InterviewStatusEnum
 
 class Answer(BaseModel):
     question: str

@@ -1,19 +1,26 @@
-# db_models/interview_session.py
-
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, Boolean
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, Boolean, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database.db import Base
-from schema.interview_schema import InterviewStatusEnum
+from utils.interview_util import InterviewStatusEnum
+
+# from utils.auth_util import  userRoleEnum
+from enum import Enum
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy import Boolean, DateTime, String,Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database.db import Base
+
+
+class userRoleEnum(str, Enum):
+    USER = "user"
+    RECRUITER = "recruiter"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -35,13 +42,57 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     role: Mapped[str] = mapped_column(
-        String(20),
-        default="user",  # "user" or "recruiter"
+        SqlEnum(userRoleEnum),
+        default=userRoleEnum.USER,  # "user" or "recruiter"
+        nullable=False,
     )
 
-    is_active: Mapped[bool] = mapped_column(
-        Boolean,
-        default=True,
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+    )
+
+
+class InterviewReportDB(Base):
+    __tablename__ = "interview_reports"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    session_id: Mapped[int] = mapped_column(
+        ForeignKey("interview_sessions.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
+    overall_score: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+
+    strengths: Mapped[list] = mapped_column(
+        JSON,
+        nullable=False,
+    )
+
+    weaknesses: Mapped[list] = mapped_column(
+        JSON,
+        nullable=False,
+    )
+
+    generic_advice: Mapped[list] = mapped_column(
+        JSON,
+        nullable=False,
+    )
+
+    roadmap: Mapped[list] = mapped_column(
+        JSON,
+        nullable=False,
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -72,7 +123,7 @@ class InterviewSessionDB(Base):
     )
 
     status: Mapped[InterviewStatusEnum] = mapped_column(
-        Enum(InterviewStatusEnum),
+        SqlEnum(InterviewStatusEnum),
         default=InterviewStatusEnum.IN_PROGRESS,
         nullable=False,
     )

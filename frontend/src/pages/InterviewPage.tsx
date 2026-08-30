@@ -44,6 +44,8 @@ const InterviewPage = () => {
 
         const data: any = await submitAPI(payload)
 
+        console.log(data)
+
         if (data.interviewEnded) {
             finishInterview()
         } else {

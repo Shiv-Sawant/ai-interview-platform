@@ -13,9 +13,9 @@ const Interview = ({ handleSkip, handleEnd, status }) => {
 
             </div>
 
-            <div className='interview-actions'>
-                <button onClick={handleSkip}>Skip Question</button>
-                <button onClick={handleEnd}>End Interview</button>
+            <div className={`interview-actions ${status == APP_CONSTANT.ASKING && "disable"}`}>
+                <button className={`${status == APP_CONSTANT.ASKING && "disable"}`} onClick={handleSkip} disabled={status == APP_CONSTANT.ASKING}>Skip Question</button>
+                <button className={`${status == APP_CONSTANT.ASKING && "disable"}`} onClick={handleEnd} disabled={status == APP_CONSTANT.ASKING}>End Interview</button>
             </div>
 
             <div className='user-card'>

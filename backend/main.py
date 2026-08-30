@@ -1,16 +1,16 @@
 from fastapi import FastAPI, Request
-from routers.route import router
 from fastapi.middleware.cors import CORSMiddleware
-from utils.interview_util import AppException
 from fastapi.responses import JSONResponse
-from database.db import create_tables
-from contextlib import asynccontextmanager
-from model.common_models import (
-    InterviewSessionDB,
-    InterviewQuestionDB,
-    InterviewAnswerDB,
-)
 
+from database.db import create_tables
+
+from routers.interview_route import interview_route
+from routers.auth_route import auth_router
+
+from utils.interview_util import AppException
+from contextlib import asynccontextmanager
+
+import model.common_models
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -65,4 +65,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+app.include_router(interview_route, tags=["interview"])
+app.include_router(auth_router, tags=["auth"])

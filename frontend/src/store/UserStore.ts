@@ -65,10 +65,12 @@ export const useCommonStore = create<any>()(
                 try {
                     await axiosInstance.post("/register", data)
                     toast.success("register successful")
+                    return true
                 } catch (error: any) {
                     set({ user: null })
                     toast.error(error.response?.data?.detail || 'internal server error')
                     console.error('error in user register', error)
+                    return false
                 } finally {
                     set({ isRegister: false })
                 }

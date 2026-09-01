@@ -42,12 +42,12 @@ const Auth = () => {
                 email: form.email,
                 password: form.password,
             })
-            if (success) navigate("/start-interview")
+            if (success) navigate("/dashboard")
             return
         }
 
         const success = await register(form)
-        if (success) navigate("/login")
+        if (success) setMode("login")
     }
 
     return (

@@ -14,11 +14,13 @@ from database.db import get_db
 
 async def get_active_session(
     session_id: str,
+    user_id: int,
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
         select(InterviewSessionDB).where(
             InterviewSessionDB.session_id == session_id,
+            InterviewSessionDB.user_id == user_id,
             InterviewSessionDB.status == InterviewStatusEnum.IN_PROGRESS,
         )
     )
@@ -42,8 +44,15 @@ async def get_session(db: AsyncSession, session_id: str) -> InterviewSession:
     return result.scalar_one_or_none()
 
 
-async def get_completed_session(session_id: str, db: AsyncSession):
-    session = await get_session(db, session_id)
+async def get_completed_session(session_id: str, user_id: int, db: AsyncSession):
+    result = await db.execute(
+        select(InterviewSessionDB).where(
+            InterviewSessionDB.session_id == session_id,
+            InterviewSessionDB.user_id == user_id,
+        )
+    )
+
+    session = result.scalar_one_or_none()
 
     if not session:
         raise AppException(

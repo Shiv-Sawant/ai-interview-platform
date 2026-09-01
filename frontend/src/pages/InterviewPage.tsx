@@ -1,22 +1,43 @@
-import React, { useEffect, useState } from 'react'
-import { APP_CONSTANT, BASE_URL } from '../utils/constant'
-import StartInterview from '../components/StartInterview'
-import axios from 'axios'
-import { playAudio } from '../utils/audio'
-import Interview from '../components/Interview'
-import { useSpeechToText } from '../hooks/useSpeechToText'
-import Report from '../components/Report'
-import { endInterviewAPI, reportAPI, startInterviewAPI, submitAPI } from '../services/interview-service'
+import { useEffect, useState } from "react"
+
+import { APP_CONSTANT } from "../utils/constant"
+import StartInterview from "../components/StartInterview"
+import Interview from "../components/Interview"
+import Report from "../components/Report"
+
+import { playAudio } from "../utils/audio"
+import { useSpeechToText } from "../hooks/useSpeechToText"
+
+import "../styles/InterviewPage.css"
+import type { AnswerPayload, InterviewReport, ReportResponse, StartInterviewResponse, SubmitAnswerResponse } from "../types/TInterviewPage"
+import { useCommonStore } from "../store/UserStore"
+
+
 
 const InterviewPage = () => {
-    const [status, setStatus] = useState<string>(APP_CONSTANT.IDLE)
-    const [sessionId, setSessionId] = useState<null | string>(null)
-    const [question, setQuestion] = useState<string>("")
-    const [report, setReport] = useState(null)
-    const [loading, setLoading] = useState(false)
+    const [status, setStatus] = useState<string>(
+        APP_CONSTANT.IDLE
+    )
 
-    const handleStartInterview = async (data, session_id) => {
-        console.log(data, session_id)
+    const { submit, interviewReport, endInterview } = useCommonStore()
+
+    const [sessionId, setSessionId] =
+        useState<string | null>(null)
+
+    const [question, setQuestion] =
+        useState<string>("")
+
+    const [report, setReport] =
+        useState<InterviewReport | null>(null)
+
+    const [loading, setLoading] =
+        useState<boolean>(false)
+
+
+    const handleStartInterview = async (
+        data: StartInterviewResponse,
+        session_id: string
+    ) => {
         setLoading(true)
 
         setSessionId(session_id)
@@ -24,99 +45,276 @@ const InterviewPage = () => {
         setStatus(APP_CONSTANT.INTRO)
 
         const introText = data.intro_text
+
         playAudio(introText, () => {
             setLoading(false)
             setStatus(APP_CONSTANT.ASKING)
         })
     }
 
-    const onAutoSubmit: any = async (finalText) => {
+
+    const onAutoSubmit = async (
+        finalText: string
+    ): Promise<void> => {
         stopListening()
 
-        if (!finalText.trim()) return
-
-        const payload = {
-            "session_id": sessionId,
-            "answer": finalText,
-            "skip": false
-        }
-        console.log(payload)
-
-        const data: any = await submitAPI(payload)
-
-        console.log(data)
-
-        if (data.interviewEnded) {
-            finishInterview()
-        } else {
-            setQuestion(data.nextQuestion)
-            setStatus(APP_CONSTANT.ASKING)
+        if (!finalText.trim()) {
+            return
         }
 
-    }
-
-    const { stopListening, startListening } = useSpeechToText(onAutoSubmit)
-
-    const finishInterview = async () => {
-        setLoading(true)
-        setStatus(APP_CONSTANT.COMPLETED)
-
-        const data: any = await reportAPI(sessionId)
-
-        if (!data) return
-
-        setReport(data.result)
-        setLoading(false)
-    }
-
-    const handleSkip = async () => {
-        console.log(status)
-        stopListening()
-
-        const payload = {
-            "session_id": sessionId,
-            "answer": "",
-            "skip": true
+        const payload: AnswerPayload = {
+            session_id: sessionId,
+            answer: finalText,
+            skip: false,
         }
 
-        const data: any = await submitAPI(payload)
+        try {
+            const data = await submit(payload) as SubmitAnswerResponse
 
-        if (data.interviewEnded) {
-            finishInterview()
-        } else {
-            setQuestion(data.nextQuestion)
-            setStatus(APP_CONSTANT.ASKING)
+            if (data.interviewEnded) {
+                await finishInterview()
+            } else {
+                setQuestion(
+                    data.nextQuestion ?? ""
+                )
+
+                setStatus(
+                    APP_CONSTANT.ASKING
+                )
+            }
+        } catch (error: unknown) {
+            console.error(
+                "Submit answer error:",
+                error
+            )
         }
     }
 
-    const handleEnd = async () => {
-        stopListening()
-        await endInterviewAPI(sessionId)
-        await finishInterview()
-    }
+
+    const {
+        stopListening,
+        startListening,
+    } = useSpeechToText(onAutoSubmit)
+
+
+    const finishInterview =
+        async (): Promise<void> => {
+            if (!sessionId) {
+                return
+            }
+
+            setLoading(true)
+            setStatus(APP_CONSTANT.COMPLETED)
+
+            try {
+                const data =
+                    await interviewReport(
+                        sessionId
+                    ) as ReportResponse
+
+                if (!data) {
+                    return
+                }
+
+                setReport(data.result)
+            } catch (error: unknown) {
+                console.error(
+                    "Report generation error:",
+                    error
+                )
+            } finally {
+                setLoading(false)
+            }
+        }
+
+
+    const handleSkip =
+        async (): Promise<void> => {
+            stopListening()
+
+            const payload: AnswerPayload = {
+                session_id: sessionId,
+                answer: "",
+                skip: true,
+            }
+
+            try {
+                const data =
+                    await submit(
+                        payload
+                    ) as SubmitAnswerResponse
+
+                if (data.interviewEnded) {
+                    await finishInterview()
+                } else {
+                    setQuestion(
+                        data.nextQuestion ?? ""
+                    )
+
+                    setStatus(
+                        APP_CONSTANT.ASKING
+                    )
+                }
+            } catch (error: unknown) {
+                console.error(
+                    "Skip question error:",
+                    error
+                )
+            }
+        }
+
+
+    const handleEnd =
+        async (): Promise<void> => {
+            if (!sessionId) {
+                return
+            }
+
+            stopListening()
+
+            try {
+                await endInterview(
+                    sessionId
+                )
+
+                await finishInterview()
+            } catch (error: unknown) {
+                console.error(
+                    "End interview error:",
+                    error
+                )
+            }
+        }
+
 
     useEffect(() => {
-        if (status === APP_CONSTANT.ASKING) {
-            playAudio(question, () => {
-                setStatus(APP_CONSTANT.LISTENING)
+        if (
+            status ===
+            APP_CONSTANT.ASKING
+        ) {
+            playAudio(
+                question,
+                () => {
+                    setStatus(
+                        APP_CONSTANT.LISTENING
+                    )
 
-                startListening()
-            })
+                    startListening()
+                }
+            )
         }
     }, [status, question])
 
+
+    const isInterviewActive =
+        status === APP_CONSTANT.ASKING ||
+        status === APP_CONSTANT.LISTENING
+
+
     return (
-        <div className='main-container'>
-            {loading}
-            {loading && <div className="loader"></div>}
+        <main className="interview-page">
+            {loading && (
+                <div className="page-loading-overlay">
+                    <div className="loading-card">
+                        <div className="interview-loader" />
 
-            {status === APP_CONSTANT.IDLE && <StartInterview onclick={handleStartInterview} />}
+                        <div>
+                            <strong>
+                                Please wait
+                            </strong>
 
-            {(status === APP_CONSTANT.ASKING || status === APP_CONSTANT.LISTENING) && <Interview handleSkip={handleSkip} handleEnd={handleEnd} status={status} />}
+                            <span>
+                                Preparing your interview...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
-            {status === APP_CONSTANT.COMPLETED && <Report value={report} />}
-            {/* <Report value={report} /> */}
-        </div>
+            {status === APP_CONSTANT.IDLE && (
+                <StartInterview
+                    onclick={
+                        handleStartInterview
+                    }
+                />
+            )}
+
+            {isInterviewActive && (
+                <section className="interview-workspace">
+                    <div className="interview-topbar">
+                        <div>
+                            <span className="interview-label">
+                                AI Mock Interview
+                            </span>
+
+                            <h1>
+                                Interview Session
+                            </h1>
+                        </div>
+
+                        <div
+                            className={`interview-status ${status ===
+                                APP_CONSTANT.LISTENING
+                                ? "listening"
+                                : "speaking"
+                                }`}
+                        >
+                            <span className="status-dot" />
+
+                            {status ===
+                                APP_CONSTANT.LISTENING
+                                ? "Listening"
+                                : "AI Speaking"}
+                        </div>
+                    </div>
+
+                    <div className="current-question-card">
+                        <div className="question-number">
+                            Question
+                        </div>
+
+                        <p>
+                            {question}
+                        </p>
+                    </div>
+
+                    <Interview
+                        handleSkip={
+                            handleSkip
+                        }
+                        handleEnd={
+                            handleEnd
+                        }
+                        status={
+                            status
+                        }
+                    />
+
+                    <div className="interview-help">
+                        <span>
+                            🎙
+                        </span>
+
+                        <p>
+                            {status ===
+                                APP_CONSTANT.LISTENING
+                                ? "Listening to your answer. Speak naturally and clearly."
+                                : "The interviewer is asking your next question."}
+                        </p>
+                    </div>
+                </section>
+            )}
+
+            {status ===
+                APP_CONSTANT.COMPLETED &&
+                report && (
+                    <Report
+                        value={
+                            report
+                        }
+                    />
+                )}
+        </main>
     )
 }
 

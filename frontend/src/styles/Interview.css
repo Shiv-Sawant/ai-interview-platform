@@ -1,0 +1,250 @@
+.interview-container {
+    width: 100%;
+    min-height: 430px;
+
+    padding: 1.25rem;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        minmax(0, 1fr);
+
+    align-items: center;
+    gap: 2rem;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 5px 20px
+        rgba(15, 23, 42, 0.04);
+
+    box-sizing: border-box;
+}
+
+
+/* --------------------------------
+   VIDEO / AVATAR CARDS
+-------------------------------- */
+
+.bot-card,
+.user-card {
+    width: 100%;
+    height: 360px;
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+
+    background: #f8fafc;
+
+    box-shadow:
+        0 3px 12px
+        rgba(15, 23, 42, 0.05);
+}
+
+.bot-card::after,
+.user-card::after {
+    position: absolute;
+
+    left: 1rem;
+    bottom: 1rem;
+
+    padding: 0.4rem 0.75rem;
+
+    border-radius: 999px;
+
+    background:
+        rgba(17, 24, 39, 0.75);
+
+    color: white;
+
+    font-size: 0.72rem;
+    font-weight: 650;
+
+    backdrop-filter:
+        blur(6px);
+}
+
+.bot-card::after {
+    content: "AI Interviewer";
+}
+
+.user-card::after {
+    content: "You";
+}
+
+.bot-card img,
+.user-card img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+}
+
+
+/* --------------------------------
+   ACTIONS
+-------------------------------- */
+
+.interview-actions {
+    min-width: 130px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.interview-actions button {
+    min-width: 125px;
+    min-height: 44px;
+
+    padding: 0.7rem 1rem;
+
+    border: none;
+    border-radius: 9px;
+
+    outline: none;
+
+    color: white;
+
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+/* Skip */
+
+.interview-actions
+button:first-child {
+    background: #f59e0b;
+}
+
+.interview-actions
+button:first-child:hover {
+    background: #d97706;
+
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 6px 14px
+        rgba(245, 158, 11, 0.22);
+}
+
+
+/* End Interview */
+
+.interview-actions
+button:last-child {
+    background: #ef4444;
+}
+
+.interview-actions
+button:last-child:hover {
+    background: #dc2626;
+
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 6px 14px
+        rgba(239, 68, 68, 0.22);
+}
+
+.interview-actions
+button:active {
+    transform:
+        translateY(0);
+}
+
+
+/* Existing disable behavior */
+
+.interview-actions
+.disable {
+    opacity: 0.55;
+
+    filter:
+        saturate(0.6);
+
+    cursor: not-allowed;
+
+    pointer-events: none;
+}
+
+
+/* --------------------------------
+   RESPONSIVE
+-------------------------------- */
+
+@media (
+    max-width: 950px
+) {
+    .interview-container {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+    .interview-actions {
+        grid-column:
+            1 / -1;
+
+        flex-direction: row;
+
+        justify-content: center;
+    }
+
+    .interview-actions button {
+        min-width: 140px;
+    }
+}
+
+
+@media (
+    max-width: 650px
+) {
+    .interview-container {
+        padding: 1rem;
+
+        grid-template-columns:
+            1fr;
+
+        gap: 1rem;
+    }
+
+    .bot-card,
+    .user-card {
+        height: 280px;
+    }
+
+    .interview-actions {
+        grid-column: auto;
+
+        width: 100%;
+    }
+
+    .interview-actions button {
+        flex: 1;
+    }
+}

@@ -53,8 +53,8 @@ async def generate_interview_controller(
     return {"session_id": session.session_id}
 
 
-async def start_interview_controller(session_id: str, db: AsyncSession):
-    session = await get_active_session(session_id, db)
+async def start_interview_controller(session_id: str, current_user, db: AsyncSession):
+    session = await get_active_session(session_id, current_user.id, db)
 
     question = await get_current_question(
         db,
@@ -75,11 +75,13 @@ async def start_interview_controller(session_id: str, db: AsyncSession):
 
 async def submit_answer_controller(
     answer_req: AnswerRequest,
+    current_user,
     db: AsyncSession,
 ):
     # 1. Get active session from DB
     session = await get_active_session(
         answer_req.session_id,
+        current_user.id,
         db,
     )
 
@@ -110,8 +112,8 @@ async def submit_answer_controller(
     }
 
 
-async def end_interview_controller(session_id: str, db: AsyncSession):
-    session = await get_active_session(session_id, db)
+async def end_interview_controller(session_id: str, current_user, db: AsyncSession):
+    session = await get_active_session(session_id, current_user.id, db)
 
     session.status = InterviewStatusEnum.COMPLETED
 
@@ -121,8 +123,8 @@ async def end_interview_controller(session_id: str, db: AsyncSession):
     return {"interviewEnded": True}
 
 
-async def generate_report_controller(session_id: str, db: AsyncSession):
-    session = await get_completed_session(session_id, db)
+async def generate_report_controller(session_id: str, user_id: int, db: AsyncSession):
+    session = await get_completed_session(session_id,user_id, db)
 
     # resp = await generate_report(session.answers)
 

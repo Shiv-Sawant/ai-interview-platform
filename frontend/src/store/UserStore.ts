@@ -28,6 +28,25 @@ axiosInstance.interceptors.request.use(
     }
 )
 
+type User = {
+    id: number
+    full_name: string
+    email: string
+    role: "user" | "recruiter"
+}
+
+type CommonStore = {
+    user: User | null
+    authLoading: boolean
+    isLogin: boolean
+
+    login: (
+        data: any
+    ) => Promise<boolean>
+
+    me: () => Promise<void>
+}
+
 export const useCommonStore = create<any>()(
     persist(
         (set) => ({
@@ -36,6 +55,7 @@ export const useCommonStore = create<any>()(
             isLogin: false,
             sessionId: null,
             submitRes: {},
+            authLoading: true,
             endInterviewRes: {},
             reportRes: {},
             startInterviewRes: {},
@@ -57,14 +77,10 @@ export const useCommonStore = create<any>()(
                 set({ isLogin: true })
                 try {
                     const res = await axiosInstance.post("/login", data)
-                    set({ user: res?.data })
-                    localStorage.setItem(
-                        "access_token",
-                        res?.data?.access_token
-                    )
+                    localStorage.setItem("access_token", res.data.access_token)
+                    set({ user: res.data.user })
                     toast.success("login successful")
                     return true
-
                 } catch (error: any) {
                     set({ user: null })
                     toast.error(error.response?.data?.detail || 'internal server error')
@@ -73,6 +89,35 @@ export const useCommonStore = create<any>()(
                 } finally {
                     set({ isLogin: false })
                 }
+            },
+            me: async () => {
+                const token =
+                    localStorage.getItem("access_token")
+
+                if (!token) {
+                    set({
+                        user: null,
+                        authLoading: false,
+                    })
+
+                    return
+                }
+                try {
+
+                    const res = await axiosInstance.get("/me")
+                    set({
+                        user: res.data,
+                        authLoading: false,
+                    })
+                } catch (error: any) {
+                    set({ user: null })
+                    toast.error(error.response?.data?.detail || 'internal server error')
+                    console.error('error in user register', error)
+                }
+            },
+            logout: async () => {
+                localStorage.clear()
+                set({ user: null })
             },
             generateQuestion: async (formdata: FormData) => {
                 try {
@@ -90,7 +135,6 @@ export const useCommonStore = create<any>()(
                     return sessionId
                 } catch (error: unknown) {
                     set({ sessionId: null })
-
                     if (axios.isAxiosError(error)) {
                         toast.error(error.response?.data?.detail || "Failed to generate interview questions")
                     } else {

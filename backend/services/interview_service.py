@@ -72,6 +72,8 @@ async def get_completed_session(session_id: str, user_id: int, db: AsyncSession)
 async def dummy_session(
     db: AsyncSession,
     user_id: int,
+    job_title: str,
+    job_description: str,
     intro_text: str,
 ) -> InterviewSessionDB:
 
@@ -79,6 +81,8 @@ async def dummy_session(
         session_id=str(uuid.uuid4()),
         user_id=user_id,
         intro_text=intro_text,
+        job_title=job_title,
+        job_description=job_description,
         status=InterviewStatusEnum.IN_PROGRESS,
         current_index=0,
     )
@@ -92,15 +96,21 @@ async def dummy_session(
 
 async def create_session(
     db: AsyncSession,
+    user_id: int,
+    job_title: str,
+    job_description: str,
     intro_text: str = "",
 ) -> InterviewSessionDB:
     session_id = str(uuid.uuid4())
 
     interview_session = InterviewSessionDB(
-        session_id=session_id,
+        session_id=str(uuid.uuid4()),
+        user_id=user_id,
+        intro_text=intro_text,
+        job_title=job_title,
+        job_description=job_description,
         status=InterviewStatusEnum.IN_PROGRESS,
         current_index=0,
-        intro_text=intro_text,
     )
 
     db.add(interview_session)

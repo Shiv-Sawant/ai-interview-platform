@@ -1,4 +1,4 @@
-import { useCommonStore } from "../store/UserStore"
+import { useCommonStore } from "../store/CommonStore"
 import { useState } from "react"
 import "../styles/Auth.css"
 import { useNavigate } from "react-router-dom"

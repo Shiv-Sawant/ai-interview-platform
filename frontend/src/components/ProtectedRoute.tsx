@@ -1,5 +1,5 @@
 import React from 'react'
-import { useCommonStore } from '../store/UserStore'
+import { useCommonStore } from '../store/CommonStore'
 import { Navigate, Outlet } from 'react-router-dom'
 
 type ProtectedRouteProps = {

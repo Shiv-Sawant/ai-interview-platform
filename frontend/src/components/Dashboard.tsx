@@ -1,13 +1,18 @@
 import { useNavigate } from "react-router-dom"
-import { useCommonStore } from "../store/UserStore"
+import { useCommonStore } from "../store/CommonStore"
 import "../styles/Dashboard.css"
+import { useEffect } from "react"
+import { useDashboardStore } from "../store/DashboardStore"
 
 const Dashboard = () => {
     const navigate = useNavigate()
 
-    const user = useCommonStore(
-        (state) => state.user
-    )
+    const { user } = useCommonStore()
+    const { getDashboard, dashboard } = useDashboardStore()
+
+    useEffect(() => {
+        getDashboard()
+    }, [])
 
     return (
         <div className="dashboard-page">
@@ -44,7 +49,7 @@ const Dashboard = () => {
                         Total Interviews
                     </span>
 
-                    <strong>12</strong>
+                    <strong>{dashboard?.stats?.totalInterviews}</strong>
 
                     <span className="stat-helper">
                         All interview sessions
@@ -56,7 +61,7 @@ const Dashboard = () => {
                         Completed
                     </span>
 
-                    <strong>9</strong>
+                    <strong>{dashboard?.stats?.completedInterviews}</strong>
 
                     <span className="stat-helper">
                         Successfully completed
@@ -68,7 +73,7 @@ const Dashboard = () => {
                         Average Score
                     </span>
 
-                    <strong>76%</strong>
+                    <strong>{dashboard?.stats?.averageScore}%</strong>
 
                     <span className="stat-helper">
                         Across completed interviews
@@ -80,7 +85,7 @@ const Dashboard = () => {
                         Best Score
                     </span>
 
-                    <strong>88%</strong>
+                    <strong>{dashboard?.stats?.bestScore}%</strong>
 
                     <span className="stat-helper">
                         Your highest score
@@ -109,73 +114,112 @@ const Dashboard = () => {
                         </button>
                     </div>
 
-                    <div className="recent-list">
-                        <div className="recent-item">
+                    <section className="dashboard-card recent-section">
+                        <div className="dashboard-card-header">
                             <div>
-                                <h3>
-                                    Senior Frontend Developer
-                                </h3>
+                                <h2>Recent Interviews</h2>
 
                                 <p>
-                                    React • System Design • DSA
+                                    Your latest interview sessions
                                 </p>
                             </div>
 
-                            <div className="recent-meta">
-                                <span className="score good">
-                                    82%
-                                </span>
-
-                                <span className="status completed">
-                                    Completed
-                                </span>
-                            </div>
+                            <button
+                                className="dashboard-link-btn"
+                                onClick={() =>
+                                    navigate("/history")
+                                }
+                            >
+                                View All
+                            </button>
                         </div>
 
-                        <div className="recent-item">
-                            <div>
-                                <h3>
-                                    React Native Engineer
-                                </h3>
+                        <div className="recent-list">
+                            { dashboard?.recentInterviews?.length === 0 ? (
+                                <div className="recent-empty">
+                                    <p>
+                                        No interviews yet.
+                                    </p>
 
-                                <p>
-                                    React Native • JavaScript
-                                </p>
-                            </div>
+                                    <button
+                                        onClick={() =>
+                                            navigate(
+                                                "/start-interview"
+                                            )
+                                        }
+                                    >
+                                        Start your first interview
+                                    </button>
+                                </div>
+                            ) : (
+                                dashboard?.recentInterviews?.map(
+                                    (interview) => {
+                                        const isCompleted =
+                                            interview?.status ===
+                                            "completed"
 
-                            <div className="recent-meta">
-                                <span className="score">
-                                    74%
-                                </span>
+                                        return (
+                                            <div
+                                                className="recent-item"
+                                                key={
+                                                    interview?.sessionId
+                                                }
+                                            >
+                                                <div className="recent-interview-info">
+                                                    <h3>
+                                                        {interview?.jobTitle ||
+                                                            "Mock Interview"}
+                                                    </h3>
 
-                                <span className="status completed">
-                                    Completed
-                                </span>
-                            </div>
+                                                    <p>
+                                                        {new Date(
+                                                            interview?.createdAt
+                                                        ).toLocaleDateString(
+                                                            "en-IN",
+                                                            {
+                                                                day: "2-digit",
+                                                                month: "short",
+                                                                year: "numeric",
+                                                            }
+                                                        )}
+                                                    </p>
+                                                </div>
+
+                                                <div className="recent-meta">
+                                                    <span
+                                                        className={`score ${interview?.score ===
+                                                            null
+                                                            ? "muted"
+                                                            : interview?.score >=
+                                                                80
+                                                                ? "good"
+                                                                : ""
+                                                            }`}
+                                                    >
+                                                        {interview?.score !==
+                                                            null
+                                                            ? `${interview?.score}%`
+                                                            : "—"}
+                                                    </span>
+
+                                                    <span
+                                                        className={`status ${isCompleted
+                                                            ? "completed"
+                                                            : "in-progress"
+                                                            }`}
+                                                    >
+                                                        {isCompleted
+                                                            ? "Completed"
+                                                            : "In Progress"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )
+                                    }
+                                )
+                            )}
                         </div>
-
-                        <div className="recent-item">
-                            <div>
-                                <h3>
-                                    Full Stack Developer
-                                </h3>
-
-                                <p>
-                                    React • APIs • Database
-                                </p>
-                            </div>
-
-                            <div className="recent-meta">
-                                <span className="score muted">
-                                    —
-                                </span>
-
-                                <span className="status in-progress">
-                                    In Progress
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    </section>
                 </section>
 
                 <section className="dashboard-card">
@@ -190,35 +234,25 @@ const Dashboard = () => {
                     </div>
 
                     <div className="focus-list">
-                        <div className="focus-item">
-                            <span>
-                                Database Sharding
-                            </span>
+                        {
+                            dashboard && dashboard.focusAreas.map((f, i) => {
+                                return (
+                                    <div className="focus-item">
 
-                            <span className="priority high">
-                                High
-                            </span>
-                        </div>
+                                        <span>
+                                            {f.topic}
+                                        </span>
 
-                        <div className="focus-item">
-                            <span>
-                                Distributed Systems
-                            </span>
+                                        <span className="priority high">
+                                            {f.priority}
+                                        </span>
+                                    </div>
+                                )
+                            })
+                        }
 
-                            <span className="priority high">
-                                High
-                            </span>
-                        </div>
 
-                        <div className="focus-item">
-                            <span>
-                                System Design
-                            </span>
 
-                            <span className="priority medium">
-                                Medium
-                            </span>
-                        </div>
                     </div>
                 </section>
             </div>
@@ -236,17 +270,16 @@ const Dashboard = () => {
                     </div>
 
                     <div className="strength-list">
-                        <div className="strength-item">
-                            Frontend fundamentals
-                        </div>
+                        {
+                            dashboard && dashboard.strengths.map((s, i) => {
+                                return (
+                                    <div className="strength-item">
+                                        {s}
+                                    </div>
+                                )
+                            })
+                        }
 
-                        <div className="strength-item">
-                            REST API design
-                        </div>
-
-                        <div className="strength-item">
-                            Communication
-                        </div>
                     </div>
                 </section>
 

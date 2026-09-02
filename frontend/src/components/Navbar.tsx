@@ -1,6 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom"
 import "../styles/Navbar.css"
-import { useCommonStore } from "../store/UserStore"
+import { useCommonStore } from "../store/CommonStore"
 import { useEffect } from "react"
 
 const Navbar = () => {

@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom"
-import { useCommonStore } from "../store/UserStore"
+import { useCommonStore } from "../store/CommonStore"
 
 const PublicRoute = () => {
     const { user } = useCommonStore()

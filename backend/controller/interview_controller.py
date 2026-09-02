@@ -37,6 +37,8 @@ async def generate_interview_controller(
     session = await dummy_session(
         db=db,
         user_id=user_id,
+        job_title=job_title,
+        job_description=job_description,
         intro_text=res["introText"],
     )
 
@@ -123,8 +125,8 @@ async def end_interview_controller(session_id: str, current_user, db: AsyncSessi
     return {"interviewEnded": True}
 
 
-async def generate_report_controller(session_id: str, user_id: int, db: AsyncSession):
-    session = await get_completed_session(session_id,user_id, db)
+async def generate_report_controller(session_id: str, current_user, db: AsyncSession):
+    session = await get_completed_session(session_id, current_user.id, db)
 
     # resp = await generate_report(session.answers)
 

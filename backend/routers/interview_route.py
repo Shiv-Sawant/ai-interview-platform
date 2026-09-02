@@ -54,7 +54,7 @@ async def submit_answer(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_user),
 ):
-    return await submit_answer_controller(answer_req,current_user, db)
+    return await submit_answer_controller(answer_req, current_user, db)
 
 
 @interview_route.put("/end/{session_id}", response_model=EndInterviewResponse)
@@ -63,7 +63,7 @@ async def end_interview(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_user),
 ):
-    return await end_interview_controller(session_id,current_user, db)
+    return await end_interview_controller(session_id, current_user, db)
 
 
 @interview_route.get("/report/{session_id}", response_model=ReportResponse)
@@ -72,4 +72,4 @@ async def report(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_user),
 ):
-    return await generate_report_controller(session_id,current_user, db)
+    return await generate_report_controller(session_id, current_user, db)

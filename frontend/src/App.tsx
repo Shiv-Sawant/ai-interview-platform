@@ -12,7 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Unauthorized from './components/Unauthorized '
 import NotFound from './components/NotFound'
 import PublicRoute from './components/PublicRoute'
-import { useCommonStore } from './store/UserStore'
+import { useCommonStore } from './store/CommonStore'
 import { useEffect } from 'react'
 
 function App() {
@@ -27,7 +27,7 @@ function App() {
       <BrowserRouter>
         <Navbar />
         <Routes>
-          <Route element={<PublicRoute />}> <Route path='/auth' element={<Auth />} /></Route>
+          <Route element={<PublicRoute />}> <Route path='/auth' element={<Auth />} /><Route path='/' element={<Auth />} /></Route>
           <Route element={<ProtectedRoute allowedRoles={["user",]} />}>
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/start-interview' element={<InterviewPage />} />

@@ -10,7 +10,7 @@ import { useSpeechToText } from "../hooks/useSpeechToText"
 
 import "../styles/InterviewPage.css"
 import type { AnswerPayload, InterviewReport, ReportResponse, StartInterviewResponse, SubmitAnswerResponse } from "../types/TInterviewPage"
-import { useCommonStore } from "../store/UserStore"
+import { useCommonStore } from "../store/CommonStore"
 
 const InterviewPage = () => {
     const [status, setStatus] = useState<string>(APP_CONSTANT.IDLE)

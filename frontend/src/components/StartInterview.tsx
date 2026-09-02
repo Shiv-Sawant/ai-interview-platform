@@ -1,6 +1,6 @@
 import { useState } from "react"
 import "../styles/StartInterview.css"
-import { useCommonStore } from "../store/UserStore"
+import { useCommonStore } from "../store/CommonStore"
 import type { StartInterviewProps } from "../types/TStartInterview"
 
 const ALLOWED_FILE = ["application/pdf"]

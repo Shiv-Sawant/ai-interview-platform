@@ -131,7 +131,8 @@ async def save_questions(
         db.add(
             InterviewQuestionDB(
                 session_id=session.id,
-                question=question,
+                question=question["question"],
+                topic=question["topic"],
                 question_order=index,
             )
         )

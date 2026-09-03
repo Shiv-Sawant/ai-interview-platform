@@ -14,6 +14,8 @@ import NotFound from './components/NotFound'
 import PublicRoute from './components/PublicRoute'
 import { useCommonStore } from './store/CommonStore'
 import { useEffect } from 'react'
+import Report from './components/Report'
+import HistoryReportPage from './components/HistoryReportPage'
 
 function App() {
   const { me } = useCommonStore()
@@ -34,6 +36,7 @@ function App() {
             <Route path='/profile' element={<Profile />} />
             <Route path='/interview-modes' element={<InterviewModes />} />
             <Route path='/history' element={<History />} />
+            <Route path='/history/:sessionId' element={<HistoryReportPage />} />
           </Route>
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />

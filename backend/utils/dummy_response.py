@@ -4,14 +4,36 @@ DUMMY_INTERVIEW_RESPONSE = {
         "We'll discuss your experience, frontend, backend, databases, and "
         "system design."
     ),
+
     "questions": [
-        "Tell me about yourself and your recent project.",
-        "What is the difference between authentication and authorization?",
-        "How does React handle state updates internally?",
-        "How would you design a REST API for a job portal?",
-        "What is the difference between SQL and NoSQL databases?",
-        "How would you implement caching for a high-traffic application?",
-        "Design a scalable notification system.",
+        {
+            "question": "Tell me about yourself and your recent project.",
+            "topic": "Introduction",
+        },
+        {
+            "question": "What is the difference between authentication and authorization?",
+            "topic": "Backend",
+        },
+        {
+            "question": "How does React handle state updates internally?",
+            "topic": "React",
+        },
+        {
+            "question": "How would you design a REST API for a job portal?",
+            "topic": "API Design",
+        },
+        {
+            "question": "What is the difference between SQL and NoSQL databases?",
+            "topic": "Database",
+        },
+        {
+            "question": "How would you implement caching for a high-traffic application?",
+            "topic": "System Design",
+        },
+        {
+            "question": "Design a scalable notification system.",
+            "topic": "System Design",
+        },
     ],
 }
 

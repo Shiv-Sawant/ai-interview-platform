@@ -1,5 +1,6 @@
 from collections import Counter
 
+from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,6 +9,8 @@ from model.common_models import (
     InterviewSessionDB,
     InterviewStatusEnum,
     DashboardDB,
+    InterviewQuestionDB,
+    InterviewAnswerDB,
 )
 
 
@@ -195,4 +198,160 @@ async def get_dashboard_controller(
         "recentInterviews": dashboard.recent_interviews,
         "strengths": dashboard.strengths,
         "focusAreas": dashboard.focus_areas,
+    }
+
+
+async def get_history_controller(
+    db: AsyncSession,
+    user_id: int,
+):
+    result = await db.execute(
+        select(
+            InterviewSessionDB,
+            InterviewReportDB,
+        )
+        .outerjoin(
+            InterviewReportDB,
+            InterviewReportDB.session_id == InterviewSessionDB.id,
+        )
+        .where(InterviewSessionDB.user_id == user_id)
+        .order_by(InterviewSessionDB.created_at.desc())
+    )
+
+    rows = result.all()
+
+    history = []
+
+    for session, report in rows:
+
+        topic_result = await db.execute(
+            select(InterviewQuestionDB.topic)
+            .where(
+                InterviewQuestionDB.session_id == session.id,
+                InterviewQuestionDB.topic.is_not(None),
+            )
+            .distinct()
+        )
+
+        topics = topic_result.scalars().all()
+
+        total_questions_result = await db.execute(
+            select(func.count(InterviewQuestionDB.id)).where(
+                InterviewQuestionDB.session_id == session.id
+            )
+        )
+
+        total_questions = total_questions_result.scalar() or 0
+
+        answered_result = await db.execute(
+            select(func.count(InterviewAnswerDB.id)).where(
+                InterviewAnswerDB.session_id == session.id,
+                InterviewAnswerDB.skipped == False,
+                InterviewAnswerDB.answer.is_not(None),
+            )
+        )
+
+        answered_questions = answered_result.scalar() or 0
+
+        skipped_result = await db.execute(
+            select(func.count(InterviewAnswerDB.id)).where(
+                InterviewAnswerDB.session_id == session.id,
+                InterviewAnswerDB.skipped == True,
+            )
+        )
+
+        skipped_questions = skipped_result.scalar() or 0
+
+        history.append(
+            {
+                "sessionId": session.session_id,
+                "jobTitle": session.job_title,
+                "status": session.status.value,
+                "score": (report.overall_score if report else None),
+                "topics": topics,
+                "totalQuestions": total_questions,
+                "answeredQuestions": answered_questions,
+                "skippedQuestions": skipped_questions,
+                "createdAt": session.created_at,
+            }
+        )
+
+    return history
+
+
+async def get_history_detail_controller(
+    session_id: str,
+    user_id: int,
+    db: AsyncSession,
+):
+    # 1. Get session and enforce ownership
+    session_result = await db.execute(
+        select(InterviewSessionDB).where(
+            InterviewSessionDB.session_id == session_id,
+            InterviewSessionDB.user_id == user_id,
+        )
+    )
+
+    session = session_result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Interview not found",
+        )
+
+    # 2. Get report
+    report_result = await db.execute(
+        select(InterviewReportDB).where(InterviewReportDB.session_id == session.id)
+    )
+
+    report = report_result.scalar_one_or_none()
+
+    # 3. Get questions
+    question_result = await db.execute(
+        select(InterviewQuestionDB)
+        .where(InterviewQuestionDB.session_id == session.id)
+        .order_by(InterviewQuestionDB.question_order.asc())
+    )
+
+    questions = question_result.scalars().all()
+
+    # 4. Get answers
+    answer_result = await db.execute(
+        select(InterviewAnswerDB).where(InterviewAnswerDB.session_id == session.id)
+    )
+
+    answers = answer_result.scalars().all()
+
+    # question_id -> answer
+    answer_map = {answer.question_id: answer for answer in answers}
+
+    question_answers = []
+
+    for question in questions:
+        answer = answer_map.get(question.id)
+
+        question_answers.append(
+            {
+                "questionId": question.id,
+                "question": question.question,
+                "topic": question.topic,
+                "answer": answer.answer if answer else None,
+                "skipped": answer.skipped if answer else False,
+            }
+        )
+
+    return {
+        "sessionId": session.session_id,
+        "jobTitle": session.job_title,
+        "status": session.status.value,
+        "createdAt": session.created_at,
+        "report": {
+            "overallScore": (report.overall_score if report else None),
+            "strengths": (report.strengths if report else []),
+            "weaknesses": (report.weaknesses if report else []),
+            "genericAdvice": (report.generic_advice if report else []),
+            "roadmap": (report.roadmap if report else []),
+        },
+        "questions": question_answers,
     }

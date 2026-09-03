@@ -159,28 +159,32 @@ class InterviewQuestionDB(Base):
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
-        autoincrement=True,
+        autoincrement=True
     )
 
     session_id: Mapped[int] = mapped_column(
         ForeignKey(
             "interview_sessions.id",
-            ondelete="CASCADE",
+            ondelete="CASCADE"
         ),
-        index=True,
         nullable=False,
+        index=True
     )
 
     question: Mapped[str] = mapped_column(
         Text,
-        nullable=False,
+        nullable=False
+    )
+
+    topic: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True
     )
 
     question_order: Mapped[int] = mapped_column(
         Integer,
-        nullable=False,
+        nullable=False
     )
-
 
 class InterviewAnswerDB(Base):
     __tablename__ = "interview_answers"

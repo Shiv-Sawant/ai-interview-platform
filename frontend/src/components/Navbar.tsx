@@ -1,7 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom"
 import "../styles/Navbar.css"
 import { useCommonStore } from "../store/CommonStore"
-import { useEffect } from "react"
 
 const Navbar = () => {
     const navigate = useNavigate()
@@ -38,7 +37,7 @@ const Navbar = () => {
                     <>
                         <NavLink to="/dashboard" className={getNavClass}>Dashboard</NavLink>
                         <NavLink to="/start-interview" className={getNavClass}>Start Interview</NavLink>
-                        <NavLink to="/interview-modes" className={getNavClass}>Interview Modes</NavLink>
+                        {/* <NavLink to="/interview-modes" className={getNavClass}>Interview Modes</NavLink> */}
                         <NavLink to="/history" className={getNavClass}>History</NavLink>
                     </>
                 )}

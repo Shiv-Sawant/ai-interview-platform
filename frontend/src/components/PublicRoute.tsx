@@ -10,7 +10,7 @@ const PublicRoute = () => {
             return <Navigate to="/recruiter" replace />
         }
 
-        return <Navigate to="/start-interview" replace />
+        return <Navigate to="/dashboard" replace />
     }
 
     return <Outlet />

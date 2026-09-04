@@ -59,7 +59,7 @@ export const useCommonStore = create<any>()(
                     localStorage.setItem("access_token", res.data.access_token)
                     set({ user: res.data.user })
                     toast.success("login successful")
-                    return true
+                    return res.data
                 } catch (error: any) {
                     set({ user: null })
                     toast.error(error.response?.data?.detail || 'internal server error')

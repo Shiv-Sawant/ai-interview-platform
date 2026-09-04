@@ -4,7 +4,7 @@ import "../styles/Dashboard.css"
 import { useEffect } from "react"
 import { useDashboardStore } from "../store/DashboardStore"
 
-const Dashboard = () => {
+const UserDashboard = () => {
     const navigate = useNavigate()
 
     const { user } = useCommonStore()
@@ -307,4 +307,4 @@ const Dashboard = () => {
     )
 }
 
-export default Dashboard
+export default UserDashboard

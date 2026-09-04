@@ -42,11 +42,14 @@ const Auth = () => {
                 email: form.email,
                 password: form.password,
             })
-            if (success) navigate("/dashboard")
+            if (success && success.user.role == "recruiter") navigate("/recruiter/dashboard")
+            else if (success && success.user.role == "user") navigate("/dashboard")
+
             return
         }
 
         const success = await register(form)
+
         if (success) setMode("login")
     }
 

@@ -157,34 +157,20 @@ class InterviewSessionDB(Base):
 class InterviewQuestionDB(Base):
     __tablename__ = "interview_questions"
 
-    id: Mapped[int] = mapped_column(
-        primary_key=True,
-        autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
     session_id: Mapped[int] = mapped_column(
-        ForeignKey(
-            "interview_sessions.id",
-            ondelete="CASCADE"
-        ),
+        ForeignKey("interview_sessions.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
 
-    question: Mapped[str] = mapped_column(
-        Text,
-        nullable=False
-    )
+    question: Mapped[str] = mapped_column(Text, nullable=False)
 
-    topic: Mapped[str | None] = mapped_column(
-        String(100),
-        nullable=True
-    )
+    topic: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
-    question_order: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False
-    )
+    question_order: Mapped[int] = mapped_column(Integer, nullable=False)
+
 
 class InterviewAnswerDB(Base):
     __tablename__ = "interview_answers"
@@ -260,5 +246,39 @@ class DashboardDB(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+
+class RecruiterInterviewDB(Base):
+    __tablename__ = "recruiter_interviews"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    recruiter_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    session_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "interview_sessions.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )

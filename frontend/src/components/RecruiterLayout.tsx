@@ -22,17 +22,17 @@ const RecruiterLayout = () => {
                         Candidates
                     </NavLink>
 
-                    <NavLink to="/recruiter/interviews">
+                    {/* <NavLink to="/recruiter/interviews">
                         Interviews
-                    </NavLink>
+                    </NavLink> */}
 
-                    <NavLink to="/recruiter/invites">
+                    {/* <NavLink to="/recruiter/invites">
                         Invites
-                    </NavLink>
+                    </NavLink> */}
 
-                    <NavLink to="/recruiter/reports">
+                    {/* <NavLink to="/recruiter/reports">
                         Reports
-                    </NavLink>
+                    </NavLink> */}
 
                     <NavLink to="/recruiter/profile">
                         Profile

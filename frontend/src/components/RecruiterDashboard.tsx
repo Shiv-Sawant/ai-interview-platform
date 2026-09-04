@@ -76,10 +76,10 @@ const RecruiterDashboard = () => {
             Track candidates, interviews and hiring performance.
           </p>
         </div>
-
+{/* 
         <button className="invite-button">
           + Invite Candidate
-        </button>
+        </button> */}
       </div>
 
       <section className="stats-grid">
@@ -206,10 +206,10 @@ const RecruiterDashboard = () => {
           </div>
 
           <div className="pipeline-list">
-            <div>
+            {/* <div>
               <span>Invited</span>
               <strong>14</strong>
-            </div>
+            </div> */}
 
             <div>
               <span>In Progress</span>
@@ -237,9 +237,9 @@ const RecruiterDashboard = () => {
           </div>
 
           <div className="quick-actions">
-            <button>
+            {/* <button>
               Invite Candidate
-            </button>
+            </button> */}
 
             <button>
               View Interviews

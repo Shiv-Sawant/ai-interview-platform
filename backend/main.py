@@ -7,6 +7,7 @@ from database.db import create_tables
 from routers.interview_route import interview_route
 from routers.auth_route import auth_router
 from routers.dashboard_route import dashboard_route
+from routers.recruiter_route import recruiter_route
 
 from utils.interview_util import AppException
 from contextlib import asynccontextmanager
@@ -67,6 +68,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+app.include_router(recruiter_route)
 app.include_router(interview_route, tags=["interview"])
 app.include_router(auth_router, tags=["auth"])
 app.include_router(dashboard_route, tags=["dashboard"])

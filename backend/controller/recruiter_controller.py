@@ -10,7 +10,7 @@ from model.common_models import (
     InterviewReportDB,
     InterviewStatusEnum,
     InterviewQuestionDB,
-    InterviewAnswerDB
+    InterviewAnswerDB,
 )
 
 
@@ -134,6 +134,7 @@ async def recruiter_dashboard_controller(recruiter_id: int, db: AsyncSession):
         select(
             User.id,
             User.full_name,
+            InterviewSessionDB.job_title,
             func.max(InterviewReportDB.overall_score).label("best_score"),
         )
         .select_from(RecruiterInterviewDB)
@@ -150,10 +151,7 @@ async def recruiter_dashboard_controller(recruiter_id: int, db: AsyncSession):
             InterviewReportDB.session_id == InterviewSessionDB.id,
         )
         .where(RecruiterInterviewDB.recruiter_id == recruiter_id)
-        .group_by(
-            User.id,
-            User.full_name,
-        )
+        .group_by(User.id, User.full_name, InterviewSessionDB.job_title)
         .order_by(func.max(InterviewReportDB.overall_score).desc())
         .limit(5)
     )
@@ -164,11 +162,13 @@ async def recruiter_dashboard_controller(recruiter_id: int, db: AsyncSession):
         {
             "candidateId": candidate_id,
             "candidateName": candidate_name,
+            "jobTitle": job_title,
             "bestScore": best_score,
         }
         for (
             candidate_id,
             candidate_name,
+            job_title,
             best_score,
         ) in top_rows
     ]
@@ -242,6 +242,7 @@ async def recruiter_candidates_controller(
         "candidates": candidate_list,
     }
 
+
 async def recruiter_candidate_detail_controller(
     recruiter_id: int,
     candidate_id: int,
@@ -256,28 +257,21 @@ async def recruiter_candidate_detail_controller(
         .select_from(RecruiterInterviewDB)
         .join(
             InterviewSessionDB,
-            RecruiterInterviewDB.session_id
-            == InterviewSessionDB.id,
+            RecruiterInterviewDB.session_id == InterviewSessionDB.id,
         )
         .join(
             User,
-            InterviewSessionDB.user_id
-            == User.id,
+            InterviewSessionDB.user_id == User.id,
         )
         .outerjoin(
             InterviewReportDB,
-            InterviewReportDB.session_id
-            == InterviewSessionDB.id,
+            InterviewReportDB.session_id == InterviewSessionDB.id,
         )
         .where(
-            RecruiterInterviewDB.recruiter_id
-            == recruiter_id,
-            InterviewSessionDB.user_id
-            == candidate_id,
+            RecruiterInterviewDB.recruiter_id == recruiter_id,
+            InterviewSessionDB.user_id == candidate_id,
         )
-        .order_by(
-            InterviewSessionDB.created_at.desc()
-        )
+        .order_by(InterviewSessionDB.created_at.desc())
     )
 
     rows = result.all()
@@ -295,34 +289,24 @@ async def recruiter_candidate_detail_controller(
 
     for _, session, report in rows:
 
-        score = (
-            report.overall_score
-            if report
-            else None
-        )
+        score = report.overall_score if report else None
 
         if score is not None:
             scores.append(score)
 
-        interviews.append({
-            "sessionId": session.session_id,
-            "jobTitle": session.job_title,
-            "status": session.status.value,
-            "score": score,
-            "createdAt": session.created_at,
-        })
+        interviews.append(
+            {
+                "sessionId": session.session_id,
+                "jobTitle": session.job_title,
+                "status": session.status.value,
+                "score": score,
+                "createdAt": session.created_at,
+            }
+        )
 
-    best_score = (
-        max(scores)
-        if scores
-        else 0
-    )
+    best_score = max(scores) if scores else 0
 
-    average_score = (
-        round(sum(scores) / len(scores))
-        if scores
-        else 0
-    )
+    average_score = round(sum(scores) / len(scores)) if scores else 0
 
     return {
         "candidateId": candidate.id,
@@ -333,7 +317,8 @@ async def recruiter_candidate_detail_controller(
         "averageScore": average_score,
         "interviews": interviews,
     }
-    
+
+
 async def recruiter_interview_detail_controller(
     recruiter_id: int,
     session_id: str,
@@ -348,19 +333,15 @@ async def recruiter_interview_detail_controller(
         .select_from(RecruiterInterviewDB)
         .join(
             InterviewSessionDB,
-            RecruiterInterviewDB.session_id
-            == InterviewSessionDB.id,
+            RecruiterInterviewDB.session_id == InterviewSessionDB.id,
         )
         .join(
             User,
-            InterviewSessionDB.user_id
-            == User.id,
+            InterviewSessionDB.user_id == User.id,
         )
         .where(
-            RecruiterInterviewDB.recruiter_id
-            == recruiter_id,
-            InterviewSessionDB.session_id
-            == session_id,
+            RecruiterInterviewDB.recruiter_id == recruiter_id,
+            InterviewSessionDB.session_id == session_id,
         )
     )
 
@@ -376,10 +357,7 @@ async def recruiter_interview_detail_controller(
 
     # Report
     report_result = await db.execute(
-        select(InterviewReportDB).where(
-            InterviewReportDB.session_id
-            == session.id
-        )
+        select(InterviewReportDB).where(InterviewReportDB.session_id == session.id)
     )
 
     report = report_result.scalar_one_or_none()
@@ -387,31 +365,20 @@ async def recruiter_interview_detail_controller(
     # Questions
     question_result = await db.execute(
         select(InterviewQuestionDB)
-        .where(
-            InterviewQuestionDB.session_id
-            == session.id
-        )
-        .order_by(
-            InterviewQuestionDB.question_order.asc()
-        )
+        .where(InterviewQuestionDB.session_id == session.id)
+        .order_by(InterviewQuestionDB.question_order.asc())
     )
 
     questions = question_result.scalars().all()
 
     # Answers
     answer_result = await db.execute(
-        select(InterviewAnswerDB).where(
-            InterviewAnswerDB.session_id
-            == session.id
-        )
+        select(InterviewAnswerDB).where(InterviewAnswerDB.session_id == session.id)
     )
 
     answers = answer_result.scalars().all()
 
-    answer_map = {
-        answer.question_id: answer
-        for answer in answers
-    }
+    answer_map = {answer.question_id: answer for answer in answers}
 
     question_answers = []
 
@@ -421,17 +388,9 @@ async def recruiter_interview_detail_controller(
     for question in questions:
         answer = answer_map.get(question.id)
 
-        skipped = (
-            answer.skipped
-            if answer
-            else False
-        )
+        skipped = answer.skipped if answer else False
 
-        answer_text = (
-            answer.answer
-            if answer
-            else None
-        )
+        answer_text = answer.answer if answer else None
 
         if skipped:
             skipped_count += 1
@@ -439,56 +398,75 @@ async def recruiter_interview_detail_controller(
         elif answer_text:
             answered_count += 1
 
-        question_answers.append({
-            "questionId": question.id,
-            "question": question.question,
-            "topic": question.topic,
-            "answer": answer_text,
-            "skipped": skipped,
-        })
+        question_answers.append(
+            {
+                "questionId": question.id,
+                "question": question.question,
+                "topic": question.topic,
+                "answer": answer_text,
+                "skipped": skipped,
+            }
+        )
 
     return {
         "sessionId": session.session_id,
-
         "candidateId": candidate.id,
         "candidateName": candidate.full_name,
         "email": candidate.email,
-
         "jobTitle": session.job_title,
         "status": session.status.value,
         "createdAt": session.created_at,
-
         "totalQuestions": len(questions),
         "answeredQuestions": answered_count,
         "skippedQuestions": skipped_count,
-
         "report": {
-            "overallScore": (
-                report.overall_score
-                if report
-                else None
-            ),
-            "strengths": (
-                report.strengths
-                if report
-                else []
-            ),
-            "weaknesses": (
-                report.weaknesses
-                if report
-                else []
-            ),
-            "genericAdvice": (
-                report.generic_advice
-                if report
-                else []
-            ),
-            "roadmap": (
-                report.roadmap
-                if report
-                else []
-            ),
+            "overallScore": (report.overall_score if report else None),
+            "strengths": (report.strengths if report else []),
+            "weaknesses": (report.weaknesses if report else []),
+            "genericAdvice": (report.generic_advice if report else []),
+            "roadmap": (report.roadmap if report else []),
         },
-
         "questions": question_answers,
+    }
+
+
+async def get_recruiter_profile_controller(
+    current_user,
+):
+    return {
+        "id": current_user.id,
+        "fullName": current_user.full_name,
+        "email": current_user.email,
+        "role": current_user.role.value,
+        "isActive": current_user.is_active,
+        "createdAt": current_user.created_at,
+    }
+
+
+async def update_recruiter_profile_controller(
+    payload,
+    current_user,
+    db: AsyncSession,
+):
+    if payload.fullName is not None:
+        full_name = payload.fullName.strip()
+
+        if not full_name:
+            raise HTTPException(
+                status_code=400,
+                detail="Full name cannot be empty",
+            )
+
+        current_user.full_name = full_name
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "id": current_user.id,
+        "fullName": current_user.full_name,
+        "email": current_user.email,
+        "role": current_user.role.value,
+        "isActive": current_user.is_active,
+        "createdAt": current_user.created_at,
     }

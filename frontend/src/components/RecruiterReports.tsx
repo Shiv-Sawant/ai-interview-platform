@@ -1,163 +1,300 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useRecruiterStore } from "../store/RecruiterStore";
+
 import "../styles/RecruiterModules.css";
 
 const RecruiterReports = () => {
   const navigate = useNavigate();
 
-  const reports = [
-    {
-      sessionId: "abc-123",
-      candidate: "Rahul Sharma",
-      role: "Senior Frontend Developer",
-      score: 84,
-      strengths: [
-        "React",
-        "JavaScript",
-        "API Design",
-      ],
-      date: "04 Sep 2026",
-    },
-    {
-      sessionId: "ghi-789",
-      candidate: "Amit Patil",
-      role: "React Native Developer",
-      score: 78,
-      strengths: [
-        "React Native",
-        "Frontend",
-      ],
-      date: "03 Sep 2026",
-    },
-    {
-      sessionId: "jkl-101",
-      candidate: "Neha Shah",
-      role: "Senior React Developer",
-      score: 92,
-      strengths: [
-        "React",
-        "System Design",
-        "JavaScript",
-      ],
-      date: "02 Sep 2026",
-    },
-  ];
+  const { sessionId } = useParams<{
+    sessionId: string;
+  }>();
+
+  const {
+    getInterviewReport,
+    reportRes,
+    reportLoading,
+  } = useRecruiterStore();
+
+  useEffect(() => {
+    if (sessionId) {
+      getInterviewReport(sessionId);
+    }
+  }, [sessionId, getInterviewReport]);
+
+  if (reportLoading) {
+    return (
+      <div className="candidate-detail-empty">
+        Loading report...
+      </div>
+    );
+  }
+
+  if (!reportRes) {
+    return (
+      <div className="candidate-detail-empty">
+        Interview not found
+      </div>
+    );
+  }
+
+  const {
+    candidateName,
+    email,
+    jobTitle,
+    status,
+    createdAt,
+    totalQuestions,
+    answeredQuestions,
+    skippedQuestions,
+    report,
+    questions,
+  } = reportRes;
 
   return (
     <div className="recruiter-module">
+
+      <button
+        className="candidate-back-btn"
+        onClick={() =>
+          navigate("/recruiter/candidates")
+        }
+      >
+        ← Back to Candidates
+      </button>
+
       <div className="module-header">
         <div>
-          <h1>Interview Reports</h1>
+          <h1>Interview Report</h1>
+
           <p>
-            Review candidate performance and AI
-            evaluation.
+            Review candidate performance and
+            interview evaluation.
           </p>
         </div>
       </div>
 
-      <div className="module-stats">
-        <div>
-          <span>Total Reports</span>
-          <strong>51</strong>
+      {/* Candidate */}
+
+      <div className="module-card report-candidate-header">
+        <div className="report-person">
+
+          <div className="small-avatar">
+            {candidateName
+              .split(" ")
+              .map((item: string) => item[0])
+              .join("")}
+          </div>
+
+          <div>
+            <strong>{candidateName}</strong>
+            <span>{email}</span>
+            <span>{jobTitle}</span>
+          </div>
+
         </div>
 
         <div>
-          <span>Average Score</span>
-          <strong>76%</strong>
-        </div>
-
-        <div>
-          <span>Score 80%+</span>
-          <strong>18</strong>
-        </div>
-
-        <div>
-          <span>Needs Review</span>
-          <strong>9</strong>
+          <span className={`status-pill ${status}`}>
+            {status}
+          </span>
         </div>
       </div>
 
-      <div className="module-card">
-        <div className="module-toolbar">
-          <input
-            placeholder="Search candidate or role..."
-          />
+      {/* Stats */}
 
-          <select>
-            <option>All Scores</option>
-            <option>80% and above</option>
-            <option>60% - 79%</option>
-            <option>Below 60%</option>
-          </select>
+      <div className="module-stats">
+
+        <div>
+          <span>Overall Score</span>
+
+          <strong>
+            {report?.overallScore ?? 0}%
+          </strong>
         </div>
 
-        <div className="report-list">
-          {reports.map((report) => (
-            <div
-              className="report-row"
-              key={report.sessionId}
-            >
-              <div className="report-person">
-                <div className="small-avatar">
-                  {report.candidate
-                    .split(" ")
-                    .map((x) => x[0])
-                    .join("")}
-                </div>
+        <div>
+          <span>Total Questions</span>
 
-                <div>
+          <strong>
+            {totalQuestions}
+          </strong>
+        </div>
+
+        <div>
+          <span>Answered</span>
+
+          <strong>
+            {answeredQuestions}
+          </strong>
+        </div>
+
+        <div>
+          <span>Skipped</span>
+
+          <strong>
+            {skippedQuestions}
+          </strong>
+        </div>
+
+      </div>
+
+      {/* Strengths / Weaknesses */}
+
+      <div className="report-detail-grid">
+
+        <div className="module-card">
+          <div className="card-title">
+            <h3>Strengths</h3>
+          </div>
+
+          <div className="report-list-items">
+            {report?.strengths?.map(
+              (strength: string) => (
+                <div key={strength}>
+                  ✓ {strength}
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
+        <div className="module-card">
+          <div className="card-title">
+            <h3>Weaknesses</h3>
+          </div>
+
+          <div className="report-list-items">
+            {report?.weaknesses?.map(
+              (weakness: string) => (
+                <div key={weakness}>
+                  • {weakness}
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Advice */}
+
+      <div className="module-card report-section">
+
+        <div className="card-title">
+          <h3>AI Recommendations</h3>
+        </div>
+
+        <div className="report-list-items">
+          {report?.genericAdvice?.map(
+            (advice: string) => (
+              <div key={advice}>
+                • {advice}
+              </div>
+            )
+          )}
+        </div>
+
+      </div>
+
+      {/* Roadmap */}
+
+      <div className="module-card report-section">
+
+        <div className="card-title">
+          <h3>Learning Roadmap</h3>
+        </div>
+
+        <div className="roadmap-list">
+          {report?.roadmap?.map(
+            (item: any) => (
+              <div
+                className="roadmap-item"
+                key={item.topic}
+              >
+                <div className="roadmap-header">
                   <strong>
-                    {report.candidate}
+                    {item.topic}
                   </strong>
 
                   <span>
-                    {report.role}
+                    {item.priority}
                   </span>
                 </div>
-              </div>
-
-              <div>
-                <span className="report-label">
-                  Strengths
-                </span>
 
                 <div className="topic-tags">
-                  {report.strengths.map(
-                    (strength) => (
-                      <span key={strength}>
-                        {strength}
+                  {item.concepts?.map(
+                    (concept: string) => (
+                      <span key={concept}>
+                        {concept}
                       </span>
                     )
                   )}
                 </div>
               </div>
+            )
+          )}
+        </div>
 
-              <div className="report-score">
-                <span>Score</span>
-                <strong>
-                  {report.score}%
-                </strong>
-              </div>
+      </div>
 
-              <div>
-                <span className="report-date">
-                  {report.date}
-                </span>
-              </div>
+      {/* Questions */}
 
-              <button
-                className="secondary-btn"
-                onClick={() =>
-                  navigate(
-                    `/recruiter/interviews/${report.sessionId}`
-                  )
-                }
+      <div className="module-card report-section">
+
+        <div className="card-title">
+          <h3>Questions & Answers</h3>
+        </div>
+
+        <div className="question-answer-list">
+
+          {questions?.map(
+            (item: any, index: number) => (
+              <div
+                className="question-answer-item"
+                key={item.questionId}
               >
-                View Report
-              </button>
-            </div>
-          ))}
+                <div className="question-header">
+
+                  <strong>
+                    {index + 1}.{" "}
+                    {item.question}
+                  </strong>
+
+                  {item.topic && (
+                    <span className="question-topic">
+                      {item.topic}
+                    </span>
+                  )}
+
+                </div>
+
+                {item.skipped ? (
+                  <p className="skipped-answer">
+                    Skipped
+                  </p>
+                ) : (
+                  <p>
+                    {item.answer ||
+                      "No answer"}
+                  </p>
+                )}
+
+              </div>
+            )
+          )}
+
         </div>
       </div>
+
+      <div className="report-created-at">
+        Interview Date:{" "}
+        {new Date(
+          createdAt
+        ).toLocaleDateString("en-IN")}
+      </div>
+
     </div>
   );
 };

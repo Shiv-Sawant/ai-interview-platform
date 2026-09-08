@@ -1,7 +1,10 @@
 // RecruiterDashboard.tsx
+import { useEffect } from "react"
 import "../styles/RecruiterDashboards.css"
+import { useRecruiterStore } from "../store/RecruiterStore"
 
 const RecruiterDashboard = () => {
+  const { getRecruiterDashboardData, recruiterDashboardRes } = useRecruiterStore()
   const stats = [
     {
       label: "Total Candidates",
@@ -25,47 +28,9 @@ const RecruiterDashboard = () => {
     },
   ]
 
-  const recentInterviews = [
-    {
-      name: "Rahul Sharma",
-      role: "Senior Frontend Developer",
-      status: "Completed",
-      score: 84,
-      date: "04 Sep 2026",
-    },
-    {
-      name: "Anjali Mehta",
-      role: "Backend Developer",
-      status: "In Progress",
-      score: null,
-      date: "04 Sep 2026",
-    },
-    {
-      name: "Amit Patil",
-      role: "React Native Developer",
-      status: "Completed",
-      score: 78,
-      date: "03 Sep 2026",
-    },
-  ]
-
-  const topCandidates = [
-    {
-      name: "Neha Shah",
-      role: "Senior React Developer",
-      score: 92,
-    },
-    {
-      name: "Rahul Sharma",
-      role: "Senior Frontend Developer",
-      score: 89,
-    },
-    {
-      name: "Karan Verma",
-      role: "Full Stack Developer",
-      score: 87,
-    },
-  ]
+  useEffect(() => {
+    getRecruiterDashboardData()
+  }, [])
 
   return (
     <div className="recruiter-dashboard">
@@ -76,21 +41,21 @@ const RecruiterDashboard = () => {
             Track candidates, interviews and hiring performance.
           </p>
         </div>
-{/* 
+        {/* 
         <button className="invite-button">
           + Invite Candidate
         </button> */}
       </div>
 
       <section className="stats-grid">
-        {stats.map((stat) => (
+        {recruiterDashboardRes && Object.entries(recruiterDashboardRes?.stats).map(([label, value]: any, index) => (
           <div
             className="stat-card"
-            key={stat.label}
+            key={index}
           >
-            <span>{stat.label}</span>
-            <h2>{stat.value}</h2>
-            <p>{stat.description}</p>
+            <span>{label}</span>
+            <h2>{value}</h2>
+            <p>{stats[index].description}</p>
           </div>
         ))}
       </section>
@@ -103,9 +68,9 @@ const RecruiterDashboard = () => {
               <p>Latest candidate interview activity</p>
             </div>
 
-            <button className="text-button">
+            {/* <button className="text-button">
               View All
-            </button>
+            </button> */}
           </div>
 
           <div className="table-wrapper">
@@ -121,30 +86,29 @@ const RecruiterDashboard = () => {
               </thead>
 
               <tbody>
-                {recentInterviews.map((item) => (
-                  <tr key={item.name}>
+                {recruiterDashboardRes?.recentInterviews.map((item: any) => (
+                  <tr key={item.candidateName}>
                     <td>
                       <div className="candidate-cell">
                         <div className="candidate-avatar">
-                          {item.name
+                          {item.candidateName
                             .split(" ")
                             .map((x) => x[0])
                             .join("")}
                         </div>
 
-                        <strong>{item.name}</strong>
+                        <strong>{item.candidateName}</strong>
                       </div>
                     </td>
 
-                    <td>{item.role}</td>
+                    <td>{item.jobTitle}</td>
 
                     <td>
                       <span
-                        className={`status-badge ${
-                          item.status === "Completed"
-                            ? "completed"
-                            : "in-progress"
-                        }`}
+                        className={`status-badge ${item.status.toLowerCase() === "completed"
+                          ? "completed"
+                          : "in-progress"
+                          }`}
                       >
                         {item.status}
                       </span>
@@ -156,7 +120,7 @@ const RecruiterDashboard = () => {
                         : "-"}
                     </td>
 
-                    <td>{item.date}</td>
+                    <td>{item.createdAt}</td>
                   </tr>
                 ))}
               </tbody>
@@ -173,22 +137,22 @@ const RecruiterDashboard = () => {
           </div>
 
           <div className="top-candidate-list">
-            {topCandidates.map((candidate, index) => (
+            {recruiterDashboardRes?.topCandidates.map((candidate: any, index: any) => (
               <div
                 className="top-candidate-item"
-                key={candidate.name}
+                key={candidate.candidateName}
               >
                 <div className="candidate-rank">
                   {index + 1}
                 </div>
 
                 <div className="candidate-info">
-                  <strong>{candidate.name}</strong>
-                  <span>{candidate.role}</span>
+                  <strong>{candidate.candidateName}</strong>
+                  <span>{candidate.jobTitle}</span>
                 </div>
 
                 <div className="candidate-score">
-                  {candidate.score}%
+                  {candidate.bestScore}%
                 </div>
               </div>
             ))}
@@ -197,7 +161,7 @@ const RecruiterDashboard = () => {
       </section>
 
       <section className="bottom-grid">
-        <div className="dashboard-card">
+        {/* <div className="dashboard-card">
           <div className="card-header">
             <div>
               <h3>Hiring Pipeline</h3>
@@ -206,10 +170,10 @@ const RecruiterDashboard = () => {
           </div>
 
           <div className="pipeline-list">
-            {/* <div>
+            <div>
               <span>Invited</span>
               <strong>14</strong>
-            </div> */}
+            </div>
 
             <div>
               <span>In Progress</span>
@@ -226,7 +190,7 @@ const RecruiterDashboard = () => {
               <strong>38</strong>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="dashboard-card">
           <div className="card-header">
@@ -245,12 +209,15 @@ const RecruiterDashboard = () => {
               View Interviews
             </button>
 
-            <button>
+            {/* <button>
               Review Reports
-            </button>
+            </button> */}
 
-            <button>
+            {/* <button>
               Manage Candidates
+            </button> */}
+            <button>
+              View Candidates
             </button>
           </div>
         </div>

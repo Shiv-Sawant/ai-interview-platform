@@ -10,6 +10,8 @@ from controller.recruiter_controller import (
     recruiter_candidates_controller,
     recruiter_candidate_detail_controller,
     recruiter_interview_detail_controller,
+    get_recruiter_profile_controller,
+    update_recruiter_profile_controller,
 )
 
 from schema.recruiter_schema import (
@@ -17,6 +19,8 @@ from schema.recruiter_schema import (
     RecruiterCandidatesResponse,
     RecruiterCandidateDetailResponse,
     RecruiterInterviewDetailResponse,
+    RecruiterProfileResponse,
+    RecruiterProfileUpdateRequest,
 )
 
 recruiter_route = APIRouter(
@@ -81,5 +85,33 @@ async def recruiter_interview_detail(
     return await recruiter_interview_detail_controller(
         recruiter_id=current_user.id,
         session_id=session_id,
+        db=db,
+    )
+
+
+@recruiter_route.get(
+    "/profile",
+    response_model=RecruiterProfileResponse,
+)
+async def recruiter_profile(
+    current_user: User = Depends(require_recruiter),
+):
+    return await get_recruiter_profile_controller(
+        current_user=current_user,
+    )
+
+
+@recruiter_route.patch(
+    "/profile",
+    response_model=RecruiterProfileResponse,
+)
+async def update_recruiter_profile(
+    payload: RecruiterProfileUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_recruiter),
+):
+    return await update_recruiter_profile_controller(
+        payload=payload,
+        current_user=current_user,
         db=db,
     )

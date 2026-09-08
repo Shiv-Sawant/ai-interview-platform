@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 from utils.auth_util import userRoleEnum
 
 
@@ -27,3 +28,7 @@ class LoginResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+
+class UserProfileUpdateRequest(BaseModel):
+    full_name: Optional[str] = None

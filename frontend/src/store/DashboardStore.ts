@@ -3,8 +3,6 @@ import { persist } from "zustand/middleware";
 import { axiosInstance } from "../utils/constant";
 import toast from "react-hot-toast";
 
-
-
 export const useDashboardStore = create<any>()(
     persist(
         (set) => ({

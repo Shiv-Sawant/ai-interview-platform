@@ -26,6 +26,7 @@ class RecruiterTopCandidate(BaseModel):
     candidateId: int
     candidateName: str
     bestScore: int
+    jobTitle: str
 
 
 class RecruiterDashboardResponse(BaseModel):
@@ -50,6 +51,7 @@ class RecruiterCandidatesResponse(BaseModel):
     total: int
     candidates: list[RecruiterCandidate]
 
+
 class RecruiterCandidateInterview(BaseModel):
     sessionId: str
     jobTitle: Optional[str] = None
@@ -66,7 +68,8 @@ class RecruiterCandidateDetailResponse(BaseModel):
     bestScore: int
     averageScore: int
     interviews: list[RecruiterCandidateInterview]
-    
+
+
 class RecruiterQuestionAnswer(BaseModel):
     questionId: int
     question: str
@@ -98,3 +101,16 @@ class RecruiterInterviewDetailResponse(BaseModel):
 
     report: RecruiterInterviewReportData
     questions: list[RecruiterQuestionAnswer]
+
+
+class RecruiterProfileResponse(BaseModel):
+    id: int
+    fullName: str
+    email: str
+    role: str
+    isActive: bool
+    createdAt: datetime
+
+
+class RecruiterProfileUpdateRequest(BaseModel):
+    fullName: Optional[str] = None

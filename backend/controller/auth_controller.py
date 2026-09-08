@@ -58,3 +58,30 @@ async def LoginController(request: LoginRequest, db: AsyncSession):
         "user": user,
     }
 
+async def update_user_profile_controller(
+    payload,
+    current_user,
+    db: AsyncSession,
+):
+    if payload.full_name is not None:
+        full_name = payload.full_name.strip()
+
+        if not full_name:
+            raise HTTPException(
+                status_code=400,
+                detail="Full name cannot be empty",
+            )
+
+        current_user.full_name = full_name
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "id": current_user.id,
+        "full_name": current_user.full_name,
+        "email": current_user.email,
+        "role": current_user.role.value,
+        "is_active": current_user.is_active,
+        "created_at": current_user.created_at,
+    }

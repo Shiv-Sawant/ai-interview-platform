@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/RecruiterCandidates.css";
+import { useRecruiterStore } from "../store/RecruiterStore";
 
 type CandidateStatus =
   | "invited"
@@ -23,9 +24,10 @@ type Candidate = {
 const RecruiterCandidates = () => {
   const navigate = useNavigate();
 
+  const { getCandidatesData, candidatesRes } = useRecruiterStore()
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
-
   const candidates: Candidate[] = [
     {
       id: 1,
@@ -84,25 +86,27 @@ const RecruiterCandidates = () => {
   ];
 
   const filteredCandidates = useMemo(() => {
-    return candidates.filter((candidate) => {
+    return candidatesRes?.filter((candidate) => {
+      const searchValue = search.toLowerCase();
+
       const matchesSearch =
-        candidate.name
+        candidate.candidateName
           .toLowerCase()
-          .includes(search.toLowerCase()) ||
+          .includes(searchValue) ||
         candidate.email
           .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        candidate.jobTitle
+          .includes(searchValue) ||
+        (candidate.jobTitle ?? "")
           .toLowerCase()
-          .includes(search.toLowerCase());
+          .includes(searchValue);
 
       const matchesStatus =
         status === "all" ||
         candidate.status === status;
 
       return matchesSearch && matchesStatus;
-    });
-  }, [search, status]);
+    }) ?? [];
+  }, [candidatesRes, search, status]);
 
   const getInitials = (name: string) => {
     return name
@@ -112,6 +116,8 @@ const RecruiterCandidates = () => {
       .slice(0, 2)
       .toUpperCase();
   };
+
+
 
   const formatStatus = (
     value: CandidateStatus
@@ -140,9 +146,13 @@ const RecruiterCandidates = () => {
     if (!sessionId) return;
 
     navigate(
-      `/recruiter/interviews/${sessionId}`
+      `/recruiter/reports/${sessionId}`
     );
   };
+
+  useEffect(() => {
+    getCandidatesData()
+  }, [])
 
   return (
     <div className="recruiter-candidates">
@@ -163,14 +173,14 @@ const RecruiterCandidates = () => {
       <div className="candidate-summary">
         <div>
           <span>Total Candidates</span>
-          <strong>{candidates.length}</strong>
+          <strong>{candidatesRes?.length}</strong>
         </div>
 
         {/* <div>
           <span>Invited</span>
           <strong>
             {
-              candidates.filter(
+              candidatesRes.filter(
                 (item) =>
                   item.status === "invited"
               ).length
@@ -182,7 +192,7 @@ const RecruiterCandidates = () => {
           <span>In Progress</span>
           <strong>
             {
-              candidates.filter(
+              candidatesRes?.filter(
                 (item) =>
                   item.status ===
                   "in_progress"
@@ -195,10 +205,10 @@ const RecruiterCandidates = () => {
           <span>Completed</span>
           <strong>
             {
-              candidates.filter(
+              candidatesRes?.filter(
                 (item) =>
                   item.status ===
-                    "completed" ||
+                  "completed" ||
                   item.status === "reviewed"
               ).length
             }
@@ -264,20 +274,20 @@ const RecruiterCandidates = () => {
             </thead>
 
             <tbody>
-              {filteredCandidates.map(
+              {filteredCandidates?.map(
                 (candidate) => (
                   <tr key={candidate.id}>
                     <td>
                       <div className="candidate-profile">
                         <div className="candidate-profile-avatar">
                           {getInitials(
-                            candidate.name
+                            candidate.candidateName
                           )}
                         </div>
 
                         <div>
                           <strong>
-                            {candidate.name}
+                            {candidate.candidateName}
                           </strong>
 
                           <span>
@@ -310,13 +320,12 @@ const RecruiterCandidates = () => {
                     <td>
                       {candidate.score !== null ? (
                         <span
-                          className={`candidate-score ${
-                            candidate.score >= 80
-                              ? "high"
-                              : candidate.score >= 60
+                          className={`candidate-score ${candidate.score >= 80
+                            ? "high"
+                            : candidate.score >= 60
                               ? "medium"
                               : "low"
-                          }`}
+                            }`}
                         >
                           {candidate.score}%
                         </span>
@@ -337,7 +346,7 @@ const RecruiterCandidates = () => {
                           className="candidate-view-btn"
                           onClick={() =>
                             handleViewCandidate(
-                              candidate.id
+                              candidate.candidateId
                             )
                           }
                         >
@@ -346,17 +355,17 @@ const RecruiterCandidates = () => {
 
                         {candidate.score !==
                           null && (
-                          <button
-                            className="candidate-report-btn"
-                            onClick={() =>
-                              handleViewReport(
-                                candidate.sessionId
-                              )
-                            }
-                          >
-                            Report
-                          </button>
-                        )}
+                            <button
+                              className="candidate-report-btn"
+                              onClick={() =>
+                                handleViewReport(
+                                  candidate.sessionId
+                                )
+                              }
+                            >
+                              Report
+                            </button>
+                          )}
                       </div>
                     </td>
                   </tr>
@@ -366,7 +375,7 @@ const RecruiterCandidates = () => {
           </table>
         </div>
 
-        {filteredCandidates.length === 0 && (
+        {filteredCandidates?.length === 0 && (
           <div className="candidate-empty">
             <h3>No candidates found</h3>
 
@@ -380,8 +389,8 @@ const RecruiterCandidates = () => {
         <div className="candidate-pagination">
           <span>
             Showing 1-
-            {filteredCandidates.length} of{" "}
-            {filteredCandidates.length}
+            {filteredCandidates?.length} of{" "}
+            {filteredCandidates?.length}
           </span>
 
           <div>

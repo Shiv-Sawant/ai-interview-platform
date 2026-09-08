@@ -1,19 +1,20 @@
-import { Navigate, Outlet } from "react-router-dom"
-import { useCommonStore } from "../store/CommonStore"
+import {
+    Navigate,
+    Outlet,
+} from "react-router-dom";
+import { useCommonStore } from "../store/CommonStore";
 
 const PublicRoute = () => {
-    const { user } = useCommonStore()
+    const { user, authLoading } = useCommonStore();
 
-    // Already logged in
+    if (authLoading) return <div>Loading...</div>
+
     if (user) {
-        if (user.role === "recruiter") {
-            return <Navigate to="/recruiter" replace />
-        }
-
+        if (user.role === "recruiter") return <Navigate to="/recruiter/dashboard" replace />
         return <Navigate to="/dashboard" replace />
     }
 
-    return <Outlet />
-}
+    return <Outlet />;
+};
 
-export default PublicRoute
+export default PublicRoute;

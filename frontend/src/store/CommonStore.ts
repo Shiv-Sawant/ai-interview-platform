@@ -70,28 +70,32 @@ export const useCommonStore = create<any>()(
                 }
             },
             me: async () => {
-                const token =
-                    localStorage.getItem("access_token")
-
+                const token = localStorage.getItem("access_token")
                 if (!token) {
-                    set({
-                        user: null,
-                        authLoading: false,
-                    })
-
+                    set({ user: null, authLoading: false, })
                     return
                 }
                 try {
-
                     const res = await axiosInstance.get("/me")
-                    set({
-                        user: res.data,
-                        authLoading: false,
-                    })
+                    set({ user: res.data, authLoading: false, })
                 } catch (error: any) {
                     set({ user: null })
                     toast.error(error.response?.data?.detail || 'internal server error')
                     console.error('error in user register', error)
+                }
+            },
+            profile: async (payload) => {
+                set({ authLoading: true })
+                try {
+                    const res = await axiosInstance.patch("/profile", payload)
+                    set({ user: res.data, authLoading: false, })
+                    toast.success("Profile Updated Successfully")
+                } catch (error: any) {
+                    set({ user: null })
+                    toast.error(error.response?.data?.detail || 'Unable to update profile')
+                    console.error('error in user profile', error)
+                } finally {
+                    set({ authLoading: false })
                 }
             },
             logout: async () => {

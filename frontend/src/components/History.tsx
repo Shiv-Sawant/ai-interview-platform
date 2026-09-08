@@ -13,7 +13,6 @@ const History = () => {
     const [search, setSearch] = useState("")
 
     const { getHistory, history } = useDashboardStore()
-    console.log(history)
 
     const filteredHistory = useMemo(() => {
         return history && history.filter((item) => {
@@ -34,8 +33,6 @@ const History = () => {
             return matchesFilter && matchesSearch
         })
     }, [filter, search])
-
-    console.log(filteredHistory)
 
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString(

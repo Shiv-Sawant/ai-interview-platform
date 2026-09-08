@@ -355,3 +355,5 @@ async def get_history_detail_controller(
         },
         "questions": question_answers,
     }
+
+

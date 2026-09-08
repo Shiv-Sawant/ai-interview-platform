@@ -1,5 +1,9 @@
 from fastapi import APIRouter, Depends, Form, status
-from controller.auth_controller import RegisterController, LoginController
+from controller.auth_controller import (
+    RegisterController,
+    LoginController,
+    update_user_profile_controller,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.db import get_db
 from schema.auth_schema import (
@@ -7,9 +11,10 @@ from schema.auth_schema import (
     RegisterRequest,
     LoginRequest,
     LoginResponse,
+    UserProfileUpdateRequest,
 )
 from model.common_models import User
-from utils.auth_util import get_current_user
+from utils.auth_util import get_current_user, require_user
 
 auth_router = APIRouter()
 
@@ -37,3 +42,16 @@ async def login(
 @auth_router.get("/me", response_model=UserResponse)
 async def me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@auth_router.patch("/profile")
+async def update_profile(
+    payload: UserProfileUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_user),
+):
+    return await update_user_profile_controller(
+        payload=payload,
+        current_user=current_user,
+        db=db,
+    )

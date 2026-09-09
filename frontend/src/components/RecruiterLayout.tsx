@@ -73,6 +73,10 @@ const RecruiterLayout = () => {
                         Candidates
                     </NavLink>
 
+                    <NavLink to="/recruiter/invites">
+                        Invites
+                    </NavLink>
+
                     <NavLink
                         to="/recruiter/profile"
                     >

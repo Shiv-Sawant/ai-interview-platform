@@ -1,0 +1,259 @@
+.invite-page {
+  min-height: 100vh;
+  background: #f7f8fc;
+  padding: 45px 20px;
+}
+
+.invite-container {
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.invite-header {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  margin-bottom: 24px;
+}
+
+.invite-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #4f46e5;
+  color: white;
+
+  font-weight: 700;
+}
+
+.invite-header span {
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.invite-header h1 {
+  margin: 3px 0;
+  font-size: 27px;
+  color: #111827;
+}
+
+.invite-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.invite-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 15px;
+  padding: 28px;
+}
+
+.invite-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding-bottom: 18px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.invite-section-title h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+}
+
+.invite-status {
+  padding: 5px 10px;
+  border-radius: 20px;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-transform: capitalize;
+}
+
+.invite-status.pending {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.invite-status.started {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.invite-status.completed {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.invite-information {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+
+  margin-top: 22px;
+}
+
+.invite-information > div {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 15px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.invite-information span {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.invite-information strong {
+  color: #374151;
+  font-size: 13px;
+}
+
+.invite-job-description {
+  margin-top: 27px;
+}
+
+.invite-job-description h3,
+.invite-resume h3 {
+  margin: 0 0 8px;
+  color: #111827;
+  font-size: 15px;
+}
+
+.invite-job-description p {
+  margin: 0;
+
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.7;
+
+  white-space: pre-wrap;
+}
+
+.invite-resume {
+  margin-top: 28px;
+}
+
+.invite-resume > p {
+  color: #9ca3af;
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+
+.resume-upload-box {
+  min-height: 105px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px dashed #d1d5db;
+  border-radius: 11px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.resume-upload-box:hover {
+  border-color: #6366f1;
+  background: #fafaff;
+}
+
+.resume-upload-box div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.resume-upload-box strong {
+  color: #4f46e5;
+  font-size: 13px;
+}
+
+.resume-upload-box span {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.invite-actions {
+  margin-top: 26px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 20px;
+}
+
+.invite-actions p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.invite-start-btn {
+  margin-left: auto;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #4f46e5;
+  color: white;
+
+  padding: 12px 22px;
+
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.invite-start-btn:hover {
+  background: #4338ca;
+}
+
+.invite-start-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.invite-state {
+  min-height: 60vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #6b7280;
+}
+
+@media (max-width: 650px) {
+  .invite-information {
+    grid-template-columns: 1fr;
+  }
+
+  .invite-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .invite-start-btn {
+    width: 100%;
+  }
+}

@@ -165,9 +165,9 @@ const RecruiterCandidates = () => {
           </p>
         </div>
 
-        {/* <button className="candidate-invite-btn">
+        <button className="candidate-invite-btn">
           + Invite Candidate
-        </button> */}
+        </button>
       </div>
 
       <div className="candidate-summary">
@@ -176,7 +176,7 @@ const RecruiterCandidates = () => {
           <strong>{candidatesRes?.length}</strong>
         </div>
 
-        {/* <div>
+        <div>
           <span>Invited</span>
           <strong>
             {
@@ -186,7 +186,7 @@ const RecruiterCandidates = () => {
               ).length
             }
           </strong>
-        </div> */}
+        </div>
 
         <div>
           <span>In Progress</span>
@@ -241,9 +241,9 @@ const RecruiterCandidates = () => {
               All Status
             </option>
 
-            {/* <option value="invited">
+            <option value="invited">
               Invited
-            </option> */}
+            </option>
 
             <option value="in_progress">
               In Progress
@@ -268,7 +268,7 @@ const RecruiterCandidates = () => {
                 <th>Status</th>
                 <th>Interviews</th>
                 <th>Score</th>
-                {/* <th>Invited</th> */}
+                <th>Invited</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -336,9 +336,9 @@ const RecruiterCandidates = () => {
                       )}
                     </td>
 
-                    {/* <td>
+                    <td>
                       {candidate.invitedAt}
-                    </td> */}
+                    </td>
 
                     <td>
                       <div className="candidate-actions">

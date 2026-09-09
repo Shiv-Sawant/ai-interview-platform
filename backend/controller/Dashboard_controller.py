@@ -1,9 +1,18 @@
 from collections import Counter
 
-from fastapi import HTTPException, status
+
+from datetime import (
+    datetime,
+    timedelta,
+    timezone,
+)
+
+from fastapi import HTTPException, status, UploadFile
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from schema.recruiter_schema import InterviewInviteStatusEnum
+from controller.interview_controller import generate_interview_controller
 from model.common_models import (
     InterviewReportDB,
     InterviewSessionDB,
@@ -11,6 +20,9 @@ from model.common_models import (
     DashboardDB,
     InterviewQuestionDB,
     InterviewAnswerDB,
+    InterviewInviteDB,
+    User,
+    RecruiterInterviewDB,
 )
 
 
@@ -357,3 +369,161 @@ async def get_history_detail_controller(
     }
 
 
+async def get_interview_invite_controller(
+    token: str,
+    db: AsyncSession,
+):
+    result = await db.execute(
+        select(
+            InterviewInviteDB,
+            User,
+        )
+        .join(
+            User,
+            InterviewInviteDB.recruiter_id == User.id,
+        )
+        .where(InterviewInviteDB.token == token)
+    )
+
+    row = result.first()
+
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail="Interview invite not found",
+        )
+
+    invite, recruiter = row
+
+    # Expiry check
+    if invite.expires_at < datetime.now(timezone.utc):
+        invite.status = InterviewInviteStatusEnum.EXPIRED
+
+        await db.commit()
+
+        raise HTTPException(
+            status_code=410,
+            detail="Interview invite has expired",
+        )
+
+    if invite.status == InterviewInviteStatusEnum.CANCELLED:
+        raise HTTPException(
+            status_code=400,
+            detail="Interview invite has been cancelled",
+        )
+
+    return {
+        "candidateEmail": invite.candidate_email,
+        "jobTitle": invite.job_title,
+        "jobDescription": invite.job_description,
+        "recruiterName": recruiter.full_name,
+        "status": invite.status.value,
+        "expiresAt": invite.expires_at,
+    }
+
+
+async def start_invited_interview_controller(
+    token: str,
+    resume: UploadFile,
+    current_user,
+    db: AsyncSession,
+):
+    # 1. Get invite
+    result = await db.execute(
+        select(InterviewInviteDB).where(InterviewInviteDB.token == token)
+    )
+
+    invite = result.scalar_one_or_none()
+
+    if not invite:
+        raise HTTPException(
+            status_code=404,
+            detail="Interview invite not found",
+        )
+
+    # 2. Check expiry
+    if invite.expires_at < datetime.now(timezone.utc):
+        invite.status = InterviewInviteStatusEnum.EXPIRED
+
+        await db.commit()
+
+        raise HTTPException(
+            status_code=410,
+            detail="Interview invite has expired",
+        )
+
+    # 3. Cancelled
+    if invite.status == InterviewInviteStatusEnum.CANCELLED:
+        raise HTTPException(
+            status_code=400,
+            detail="Interview invite has been cancelled",
+        )
+
+    # 4. Candidate email must match invite
+    if current_user.email.lower() != invite.candidate_email.lower():
+        raise HTTPException(
+            status_code=403,
+            detail="This interview invite belongs to another candidate",
+        )
+
+    # 5. Already started
+    if invite.session_id is not None:
+        session_result = await db.execute(
+            select(InterviewSessionDB).where(InterviewSessionDB.id == invite.session_id)
+        )
+
+        existing_session = session_result.scalar_one_or_none()
+
+        if existing_session:
+            return {
+                "sessionId": existing_session.session_id,
+                "status": invite.status.value,
+            }
+
+    # 6. Generate normal interview using existing flow
+    interview_response = await generate_interview_controller(
+        job_title=invite.job_title,
+        job_description=invite.job_description,
+        resume=resume,
+        db=db,
+        user_id=current_user.id,
+    )
+
+    # Adjust this depending on your existing
+    # generate_interview_controller response shape.
+    public_session_id = interview_response["session_id"]
+
+    # 7. Get newly created DB session
+    session_result = await db.execute(
+        select(InterviewSessionDB).where(
+            InterviewSessionDB.session_id == public_session_id
+        )
+    )
+
+    session = session_result.scalar_one_or_none()
+
+    if not session:
+        raise HTTPException(
+            status_code=500,
+            detail="Interview session was not created",
+        )
+
+    # 8. Update invite
+    invite.candidate_id = current_user.id
+    invite.session_id = session.id
+    invite.status = InterviewInviteStatusEnum.STARTED
+
+    # 9. Link recruiter -> interview
+    recruiter_interview = RecruiterInterviewDB(
+        recruiter_id=invite.recruiter_id,
+        session_id=session.id,
+    )
+
+    db.add(recruiter_interview)
+
+    await db.commit()
+
+    return {
+        "sessionId": session.session_id,
+        "status": invite.status.value,
+    }

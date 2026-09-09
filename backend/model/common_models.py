@@ -1,10 +1,22 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, Boolean, JSON
+from sqlalchemy import (
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    Boolean,
+    JSON,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database.db import Base
 from utils.interview_util import InterviewStatusEnum
+
+from schema.recruiter_schema import InterviewInviteStatusEnum
 
 # from utils.auth_util import  userRoleEnum
 from enum import Enum
@@ -280,5 +292,83 @@ class RecruiterInterviewDB(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+
+class InterviewInviteDB(Base):
+    __tablename__ = "interview_invites"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    recruiter_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    # Filled when candidate accepts/starts
+    candidate_id: Mapped[int | None] = mapped_column(
+        ForeignKey(
+            "users.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        index=True,
+    )
+
+    candidate_email: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        index=True,
+    )
+
+    job_title: Mapped[str] = mapped_column(
+        String(200),
+        nullable=False,
+    )
+
+    job_description: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    token: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
+    status: Mapped[InterviewInviteStatusEnum] = mapped_column(
+        SqlEnum(InterviewInviteStatusEnum),
+        default=InterviewInviteStatusEnum.PENDING,
+        nullable=False,
+    )
+
+    # Becomes available after interview starts
+    session_id: Mapped[int | None] = mapped_column(
+        ForeignKey(
+            "interview_sessions.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        unique=True,
+    )
+
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
         nullable=False,
     )

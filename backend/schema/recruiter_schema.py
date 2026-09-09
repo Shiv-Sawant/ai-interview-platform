@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
+from enum import Enum
 
 
 class RecruiterDashboardStats(BaseModel):
@@ -114,3 +115,32 @@ class RecruiterProfileResponse(BaseModel):
 
 class RecruiterProfileUpdateRequest(BaseModel):
     fullName: Optional[str] = None
+
+
+class InterviewInviteStatusEnum(str, Enum):
+    PENDING = "pending"
+    STARTED = "started"
+    COMPLETED = "completed"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+
+class CreateInterviewInviteRequest(BaseModel):
+    candidateEmail: EmailStr
+    jobTitle: str
+    jobDescription: str
+    expiresInDays: int = Field(
+        default=7,
+        ge=1,
+        le=30,
+    )
+
+
+class CreateInterviewInviteResponse(BaseModel):
+    inviteId: int
+    candidateEmail: EmailStr
+    jobTitle: str
+    token: str
+    status: str
+    expiresAt: datetime
+

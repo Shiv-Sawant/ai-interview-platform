@@ -1,7 +1,14 @@
 from sqlalchemy import select, func, distinct
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from fastapi import HTTPException
+
+import secrets
+
+from datetime import (
+    datetime,
+    timedelta,
+    timezone,
+)
 
 from model.common_models import (
     User,
@@ -11,7 +18,9 @@ from model.common_models import (
     InterviewStatusEnum,
     InterviewQuestionDB,
     InterviewAnswerDB,
+    InterviewInviteDB,
 )
+from schema.recruiter_schema import InterviewInviteStatusEnum
 
 
 async def recruiter_dashboard_controller(recruiter_id: int, db: AsyncSession):
@@ -470,3 +479,38 @@ async def update_recruiter_profile_controller(
         "isActive": current_user.is_active,
         "createdAt": current_user.created_at,
     }
+
+
+async def create_interview_invite_controller(
+    payload,
+    recruiter_id: int,
+    db: AsyncSession,
+):
+    token = secrets.token_urlsafe(32)
+
+    expires_at = datetime.now(timezone.utc) + timedelta(days=payload.expiresInDays)
+
+    invite = InterviewInviteDB(
+        recruiter_id=recruiter_id,
+        candidate_email=payload.candidateEmail.lower(),
+        job_title=payload.jobTitle.strip(),
+        job_description=payload.jobDescription.strip(),
+        token=token,
+        status=InterviewInviteStatusEnum.PENDING,
+        expires_at=expires_at,
+    )
+
+    db.add(invite)
+
+    await db.commit()
+    await db.refresh(invite)
+
+    return {
+        "inviteId": invite.id,
+        "candidateEmail": invite.candidate_email,
+        "jobTitle": invite.job_title,
+        "token": invite.token,
+        "status": invite.status.value,
+        "expiresAt": invite.expires_at,
+    }
+

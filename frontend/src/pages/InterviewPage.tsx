@@ -11,13 +11,45 @@ import { useSpeechToText } from "../hooks/useSpeechToText"
 import "../styles/InterviewPage.css"
 import type { AnswerPayload, InterviewReport, ReportResponse, StartInterviewResponse, SubmitAnswerResponse } from "../types/TInterviewPage"
 import { useCommonStore } from "../store/CommonStore"
+import { useParams } from "react-router-dom"
 
 const InterviewPage = () => {
+    const { sessionId } = useParams<{ sessionId: string; }>();
+
+    useEffect(() => {
+        if (!sessionId) return;
+
+        const startExistingInterview = async () => {
+            setLoading(true)
+
+            try {
+                const formdata = new FormData()
+
+                formdata.append("job_title", getInviteResp.title)
+                formdata.append("job_description", getInviteResp.description)
+                formdata.append("resume", inviteResume)
+
+                const resp = await generateQuestion(formdata)
+
+                const data = await startInterview(resp)
+
+                handleStartInterview(data, resp)
+
+            } catch (error: unknown) {
+                console.error("handle submit error", error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        startExistingInterview()
+    }, [sessionId])
+
     const [status, setStatus] = useState<string>(APP_CONSTANT.IDLE)
 
-    const { submit, interviewReport, endInterview } = useCommonStore()
+    const { submit, interviewReport, endInterview, startInterview, generateQuestion, getInviteResp, inviteResume } = useCommonStore()
 
-    const [sessionId, setSessionId] = useState<string | null>(null)
+    const [session_Id, setSessionId] = useState<string | null>(null)
 
     const [question, setQuestion] = useState<string>("")
 
@@ -48,7 +80,7 @@ const InterviewPage = () => {
         if (!finalText.trim()) return
 
         const payload: AnswerPayload = {
-            session_id: sessionId,
+            session_id: session_Id,
             answer: finalText,
             skip: false,
         }
@@ -68,18 +100,16 @@ const InterviewPage = () => {
         }
     }
 
-
     const { stopListening, startListening, } = useSpeechToText(onAutoSubmit)
 
-
     const finishInterview = async (): Promise<void> => {
-        if (!sessionId) return
+        if (!session_Id) return
 
         setLoading(true)
         setStatus(APP_CONSTANT.COMPLETED)
 
         try {
-            const data = await interviewReport(sessionId) as ReportResponse
+            const data = await interviewReport(session_Id) as ReportResponse
 
             if (!data) return
 
@@ -91,12 +121,11 @@ const InterviewPage = () => {
         }
     }
 
-
     const handleSkip = async (): Promise<void> => {
         stopListening()
 
         const payload: AnswerPayload = {
-            session_id: sessionId,
+            session_id: session_Id,
             answer: "",
             skip: true,
         }
@@ -116,21 +145,19 @@ const InterviewPage = () => {
         }
     }
 
-
     const handleEnd = async (): Promise<void> => {
-        if (!sessionId) return
+        if (!session_Id) return
 
         stopListening()
 
         try {
-            await endInterview(sessionId)
+            await endInterview(session_Id)
 
             await finishInterview()
         } catch (error: unknown) {
             console.error("End interview error:", error)
         }
     }
-
 
     useEffect(() => {
         if (status === APP_CONSTANT.ASKING) {
@@ -141,9 +168,7 @@ const InterviewPage = () => {
         }
     }, [status, question])
 
-
     const isInterviewActive = status === APP_CONSTANT.ASKING || status === APP_CONSTANT.LISTENING
-
 
     return (
         <main className="interview-page">

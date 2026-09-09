@@ -9,6 +9,9 @@ export const useDashboardStore = create<any>()(
             dashboard: null,
             history: [],
             isLoading: false,
+            getInviteResp: null,
+            startInviteResp: null,
+            inviteResume: null,
             historyDetail: [],
             getDashboard: async () => {
                 try {
@@ -43,6 +46,29 @@ export const useDashboardStore = create<any>()(
                     set({ isLoading: false })
 
                 }
+            },
+            getInvites: async (token) => {
+                try {
+                    const resp = await axiosInstance.get(`/dashboard/invites/${token}`)
+                    set({ getInviteResp: resp.data })
+                } catch (error: any) {
+                    toast.error(error.response?.data?.detail || 'internal server error')
+                    console.error('error in interview invites', error)
+                    set({ getInviteResp: null })
+                }
+            },
+            startInvite: async (formData, token) => {
+                try {
+                    const resp = await axiosInstance.post(`/dashboard/invites/${token}/start`, formData)
+                    set({ startInviteResp: resp.data })
+                } catch (error: any) {
+                    toast.error(error.response?.data?.detail || 'internal server error')
+                    console.error('error in interview invites', error)
+                    set({ startInviteResp: null })
+                }
+            },
+            setInviteResume: async (cv) => {
+                set({ inviteResume: cv })
             }
         }),
 

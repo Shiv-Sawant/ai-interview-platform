@@ -12,6 +12,7 @@ from controller.recruiter_controller import (
     recruiter_interview_detail_controller,
     get_recruiter_profile_controller,
     update_recruiter_profile_controller,
+    create_interview_invite_controller
 )
 
 from schema.recruiter_schema import (
@@ -21,6 +22,8 @@ from schema.recruiter_schema import (
     RecruiterInterviewDetailResponse,
     RecruiterProfileResponse,
     RecruiterProfileUpdateRequest,
+    CreateInterviewInviteResponse,
+    CreateInterviewInviteRequest
 )
 
 recruiter_route = APIRouter(
@@ -113,5 +116,21 @@ async def update_recruiter_profile(
     return await update_recruiter_profile_controller(
         payload=payload,
         current_user=current_user,
+        db=db,
+    )
+
+
+@recruiter_route.post(
+    "/invites",
+    response_model=CreateInterviewInviteResponse,
+)
+async def create_interview_invite(
+    payload: CreateInterviewInviteRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_recruiter),
+):
+    return await create_interview_invite_controller(
+        payload=payload,
+        recruiter_id=current_user.id,
         db=db,
     )

@@ -39,6 +39,7 @@ const Navbar = () => {
                         <NavLink to="/start-interview" className={getNavClass}>Start Interview</NavLink>
                         {/* <NavLink to="/interview-modes" className={getNavClass}>Interview Modes</NavLink> */}
                         <NavLink to="/history" className={getNavClass}>History</NavLink>
+                        {/* <NavLink to="/invite" className={getNavClass}>Interview Invites</NavLink> */}
                         <NavLink to="/profile" className={getNavClass}>Profile</NavLink>
                     </>
                 )}

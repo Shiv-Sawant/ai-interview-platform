@@ -30,3 +30,15 @@ class DashboardResponse(BaseModel):
     recentInterviews: List[RecentInterview]
     strengths: List[str]
     focusAreas: List[FocusArea]
+
+class InterviewInviteDetailResponse(BaseModel):
+    candidateEmail: str
+    jobTitle: str
+    jobDescription: str
+    recruiterName: str
+    status: str
+    expiresAt: datetime
+    
+class StartInviteInterviewResponse(BaseModel):
+    sessionId: str
+    status: str

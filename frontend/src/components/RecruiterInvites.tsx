@@ -1,119 +1,165 @@
 import { useState } from "react";
-import "../styles/RecruiterModules.css";
+import toast from "react-hot-toast";
+
+import { axiosInstance } from "../utils/constant";
+
+import "../styles/RecruiterInvites.css";
+
+type InviteResponse = {
+  inviteId: number;
+  candidateEmail: string;
+  jobTitle: string;
+  token: string;
+  status: string;
+  expiresAt: string;
+};
 
 const RecruiterInvites = () => {
-  const [form, setForm] = useState({
-    candidateName: "",
-    email: "",
-    jobTitle: "",
-    jobDescription: "",
-    expiryDays: "7",
-  });
+  const [candidateEmail, setCandidateEmail] =
+    useState("");
 
-  const invites = [
-    {
-      id: 1,
-      name: "Karan Verma",
-      email: "karan@example.com",
-      jobTitle: "Full Stack Developer",
-      status: "Pending",
-      sentAt: "04 Sep 2026",
-    },
-    {
-      id: 2,
-      name: "Priya Shah",
-      email: "priya@example.com",
-      jobTitle: "React Developer",
-      status: "Accepted",
-      sentAt: "03 Sep 2026",
-    },
-  ];
+  const [jobTitle, setJobTitle] =
+    useState("");
 
-  const handleChange = (
-    e:
-      | React.ChangeEvent<HTMLInputElement>
-      | React.ChangeEvent<HTMLTextAreaElement>
-      | React.ChangeEvent<HTMLSelectElement>
+  const [jobDescription, setJobDescription] =
+    useState("");
+
+  const [expiresInDays, setExpiresInDays] =
+    useState(7);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [createdInvite, setCreatedInvite] =
+    useState<InviteResponse | null>(null);
+
+  const handleSubmit = async (
+    event: React.FormEvent
   ) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    event.preventDefault();
+
+    if (
+      !candidateEmail ||
+      !jobTitle ||
+      !jobDescription
+    ) {
+      toast.error(
+        "Please fill all required fields"
+      );
+
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response =
+        await axiosInstance.post(
+          "/recruiter/invites",
+          {
+            candidateEmail,
+            jobTitle,
+            jobDescription,
+            expiresInDays,
+          }
+        );
+
+      setCreatedInvite(response.data);
+
+      toast.success(
+        "Interview invite created"
+      );
+
+    } catch (error: any) {
+
+      toast.error(
+        error.response?.data?.detail ||
+          "Unable to create invite"
+      );
+
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (
-    e: React.FormEvent
-  ) => {
-    e.preventDefault();
+  const inviteLink =
+    createdInvite
+      ? `${window.location.origin}/invite/${createdInvite.token}`
+      : "";
 
-    console.log("Invite:", form);
+  const copyInvite = async () => {
+    await navigator.clipboard.writeText(
+      inviteLink
+    );
 
-    // API later:
-    // await axiosInstance.post(
-    //   "/recruiter/invites",
-    //   form
-    // )
+    toast.success(
+      "Invite link copied"
+    );
   };
 
   return (
-    <div className="recruiter-module">
-      <div className="module-header">
+    <div className="recruiter-invites-page">
+
+      <div className="invite-page-header">
         <div>
-          <h1>Candidate Invites</h1>
+          <h1>
+            Interview Invites
+          </h1>
+
           <p>
-            Invite candidates to complete an AI
-            interview.
+            Create interview invitations for
+            candidates.
           </p>
         </div>
       </div>
 
-      <div className="invite-layout">
-        <div className="module-card">
-          <div className="card-title">
-            <h3>Create Interview Invite</h3>
+      <div className="recruiter-invite-layout">
+
+        {/* CREATE INVITE */}
+
+        <div className="invite-form-card">
+
+          <div className="invite-card-header">
+            <h2>
+              Create New Invite
+            </h2>
+
             <p>
-              Candidate will receive a link to
-              start their interview.
+              Enter candidate and job details.
             </p>
           </div>
 
           <form
-            className="recruiter-form"
+            className="create-invite-form"
             onSubmit={handleSubmit}
           >
-            <div className="form-row">
-              <label>
-                Candidate Name
 
-                <input
-                  name="candidateName"
-                  value={form.candidateName}
-                  placeholder="Rahul Sharma"
-                  onChange={handleChange}
-                />
-              </label>
+            <label>
+              Candidate Email
 
-              <label>
-                Candidate Email
-
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  placeholder="rahul@example.com"
-                  onChange={handleChange}
-                />
-              </label>
-            </div>
+              <input
+                type="email"
+                placeholder="candidate@example.com"
+                value={candidateEmail}
+                onChange={(event) =>
+                  setCandidateEmail(
+                    event.target.value
+                  )
+                }
+              />
+            </label>
 
             <label>
               Job Title
 
               <input
-                name="jobTitle"
-                value={form.jobTitle}
-                placeholder="Senior Frontend Developer"
-                onChange={handleChange}
+                placeholder="Senior React Developer"
+                value={jobTitle}
+                onChange={(event) =>
+                  setJobTitle(
+                    event.target.value
+                  )
+                }
               />
             </label>
 
@@ -121,86 +167,158 @@ const RecruiterInvites = () => {
               Job Description
 
               <textarea
-                name="jobDescription"
-                value={form.jobDescription}
-                rows={7}
-                placeholder="Paste job description..."
-                onChange={handleChange}
+                rows={8}
+                placeholder="Enter job description..."
+                value={jobDescription}
+                onChange={(event) =>
+                  setJobDescription(
+                    event.target.value
+                  )
+                }
               />
             </label>
 
             <label>
-              Link Expiry
+              Invite Expiry
 
               <select
-                name="expiryDays"
-                value={form.expiryDays}
-                onChange={handleChange}
+                value={expiresInDays}
+                onChange={(event) =>
+                  setExpiresInDays(
+                    Number(
+                      event.target.value
+                    )
+                  )
+                }
               >
-                <option value="3">
+                <option value={3}>
                   3 Days
                 </option>
-                <option value="7">
+
+                <option value={7}>
                   7 Days
                 </option>
-                <option value="14">
+
+                <option value={14}>
                   14 Days
+                </option>
+
+                <option value={30}>
+                  30 Days
                 </option>
               </select>
             </label>
 
             <button
-              className="primary-btn"
               type="submit"
+              className="create-invite-btn"
+              disabled={loading}
             >
-              Send Interview Invite
+              {loading
+                ? "Creating..."
+                : "Create Interview Invite"}
             </button>
+
           </form>
         </div>
 
-        <div className="module-card">
-          <div className="card-title">
-            <h3>Recent Invites</h3>
+
+        {/* GENERATED LINK */}
+
+        <div className="invite-result-card">
+
+          <div className="invite-card-header">
+            <h2>
+              Invite Link
+            </h2>
+
             <p>
-              Track sent interview invitations.
+              Share this link with the
+              candidate.
             </p>
           </div>
 
-          <div className="invite-list">
-            {invites.map((invite) => (
-              <div
-                className="invite-item"
-                key={invite.id}
-              >
+          {!createdInvite ? (
+            <div className="no-invite-created">
+              <div>🔗</div>
+
+              <h3>
+                No invite created yet
+              </h3>
+
+              <p>
+                Create an invite to generate
+                the candidate interview link.
+              </p>
+            </div>
+          ) : (
+            <div className="created-invite">
+
+              <div className="invite-result-row">
+                <span>
+                  Candidate
+                </span>
+
+                <strong>
+                  {
+                    createdInvite.candidateEmail
+                  }
+                </strong>
+              </div>
+
+              <div className="invite-result-row">
+                <span>
+                  Role
+                </span>
+
+                <strong>
+                  {createdInvite.jobTitle}
+                </strong>
+              </div>
+
+              <div className="invite-result-row">
+                <span>
+                  Status
+                </span>
+
+                <strong className="pending-status">
+                  {createdInvite.status}
+                </strong>
+              </div>
+
+              <div className="invite-link-box">
+                <span>
+                  Interview Link
+                </span>
+
                 <div>
-                  <strong>
-                    {invite.name}
-                  </strong>
+                  <input
+                    value={inviteLink}
+                    readOnly
+                  />
 
-                  <span>
-                    {invite.jobTitle}
-                  </span>
-
-                  <small>
-                    {invite.email}
-                  </small>
-                </div>
-
-                <div className="invite-meta">
-                  <span
-                    className={`invite-status ${invite.status.toLowerCase()}`}
+                  <button
+                    onClick={copyInvite}
                   >
-                    {invite.status}
-                  </span>
-
-                  <small>
-                    {invite.sentAt}
-                  </small>
+                    Copy
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
+
+              <div className="invite-expiry">
+                Expires:{" "}
+                {new Date(
+                  createdInvite.expiresAt
+                ).toLocaleString(
+                  "en-IN"
+                )}
+              </div>
+
+            </div>
+          )}
+
         </div>
+
       </div>
     </div>
   );

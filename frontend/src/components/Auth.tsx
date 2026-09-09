@@ -1,7 +1,7 @@
 import { useCommonStore } from "../store/CommonStore"
 import { useState } from "react"
 import "../styles/Auth.css"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 type AuthMode = "login" | "register"
 type UserRole = "user" | "recruiter"
@@ -9,7 +9,14 @@ type UserRole = "user" | "recruiter"
 const Auth = () => {
     const [mode, setMode] = useState<AuthMode>("login")
 
-    const navigate = useNavigate()
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const params = new URLSearchParams(
+        location.search
+    );
+
+    const redirect = params.get("redirect");
 
     const [form, setForm] = useState({
         full_name: "",
@@ -38,13 +45,33 @@ const Auth = () => {
         e.preventDefault()
 
         if (mode === "login") {
-            const success = await login({
+            const data = await login({
                 email: form.email,
                 password: form.password,
             })
-            if (success && success.user.role == "recruiter") navigate("/recruiter/dashboard")
-            else if (success && success.user.role == "user") navigate("/dashboard")
+            if (redirect) {
+                navigate(redirect, {
+                    replace: true,
+                });
 
+                return;
+            }
+
+            if (data.user.role === "recruiter") {
+                navigate(
+                    "/recruiter/dashboard",
+                    {
+                        replace: true,
+                    }
+                );
+            } else {
+                navigate(
+                    "/dashboard",
+                    {
+                        replace: true,
+                    }
+                );
+            }
             return
         }
 

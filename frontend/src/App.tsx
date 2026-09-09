@@ -33,6 +33,9 @@ import UserLayout from "./components/UserLayout";
 import { Toaster } from "react-hot-toast";
 import { useCommonStore } from "./store/CommonStore";
 import { useEffect } from "react";
+import InterviewInvite from "./components/InterviewInvite";
+import RecruiterInterviews from "./components/RecruiterInterviews";
+import RecruiterInvites from "./components/RecruiterInvites";
 
 function App() {
   const { me } = useCommonStore();
@@ -48,130 +51,42 @@ function App() {
         <Routes>
 
           {/* PUBLIC */}
-
           <Route element={<PublicRoute />}>
-            <Route
-              path="/auth"
-              element={<Auth />}
-            />
-
-            <Route
-              path="/"
-              element={<Auth />}
-            />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<Auth />} />
           </Route>
 
+          <Route path="/invite/:token" element={<InterviewInvite />} />
 
           {/* USER */}
-
-          <Route
-            element={
-              <ProtectedRoute
-                allowedRoles={["user"]}
-              />
-            }
-          >
+          <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
             <Route element={<UserLayout />}>
-
-              <Route
-                path="/dashboard"
-                element={<UserDashboard />}
-              />
-
-              <Route
-                path="/start-interview"
-                element={<InterviewPage />}
-              />
-
-              <Route
-                path="/profile"
-                element={<Profile />}
-              />
-
-              <Route
-                path="/interview-modes"
-                element={<InterviewModes />}
-              />
-
-              <Route
-                path="/history"
-                element={<History />}
-              />
-
-              <Route
-                path="/history/:sessionId"
-                element={<HistoryReportPage />}
-              />
-
+              <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/start-interview" element={<InterviewPage />} />
+              <Route path="/interview/:sessionId" element={<InterviewPage />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/interview-modes" element={<InterviewModes />} />
+              <Route path="/history" element={<History />} />
+              <Route path="/history/:sessionId" element={<HistoryReportPage />} />
             </Route>
           </Route>
-
 
           {/* RECRUITER */}
-
-          <Route
-            element={
-              <ProtectedRoute
-                allowedRoles={["recruiter"]}
-              />
-            }
-          >
-            <Route
-              path="/recruiter"
-              element={<RecruiterLayout />}
-            >
-
-              <Route
-                index
-                element={
-                  <Navigate
-                    to="dashboard"
-                    replace
-                  />
-                }
-              />
-
-              <Route
-                path="dashboard"
-                element={<RecruiterDashboard />}
-              />
-
-              <Route
-                path="candidates"
-                element={<RecruiterCandidates />}
-              />
-
-              <Route
-                path="candidates/:candidateId"
-                element={<CandidateDetails />}
-              />
-
-              <Route
-                path="reports/:sessionId"
-                element={<RecruiterReports />}
-              />
-
-              <Route
-                path="profile"
-                element={<RecruiterProfile />}
-              />
-
+          <Route element={<ProtectedRoute allowedRoles={["recruiter"]} />}>
+            <Route path="/recruiter" element={<RecruiterLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<RecruiterDashboard />} />
+              <Route path="candidates" element={<RecruiterCandidates />} />
+              <Route path="invites" element={<RecruiterInvites />} />
+              <Route path="candidates/:candidateId" element={<CandidateDetails />} />
+              <Route path="reports/:sessionId" element={<RecruiterReports />} />
+              <Route path="profile" element={<RecruiterProfile />} />
             </Route>
           </Route>
 
-
-          <Route
-            path="/unauthorized"
-            element={<Unauthorized />}
-          />
-
-          <Route
-            path="*"
-            element={<NotFound />}
-          />
-
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
-
         <Toaster />
 
       </BrowserRouter>

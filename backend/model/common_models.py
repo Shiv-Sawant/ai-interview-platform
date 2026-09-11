@@ -14,7 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database.db import Base
-from utils.interview_util import InterviewStatusEnum
+# from utils.interview_util import InterviewStatusEnum
 
 from schema.recruiter_schema import InterviewInviteStatusEnum
 
@@ -28,6 +28,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from database.db import Base
 
+class InterviewStatusEnum(str, Enum):
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
 
 class userRoleEnum(str, Enum):
     USER = "user"

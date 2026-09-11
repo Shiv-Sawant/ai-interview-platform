@@ -43,7 +43,7 @@ const InterviewInvite = () => {
         };
 
         getInvite();
-    }, [token,startInviteResp]);
+    }, [token, startInviteResp]);
 
 
 
@@ -96,10 +96,8 @@ const InterviewInvite = () => {
             "resume",
             resume
         );
-        startInvite(formData, token)
-        // const sessionId =
-        //     response.data.sessionId;
-
+        const sessionId = await startInvite(formData, token)
+        navigate(`/interview/${sessionId}`)
         setStarting(false);
     }
 
@@ -119,7 +117,7 @@ const InterviewInvite = () => {
         );
     }
 
-    
+
     return (
         <div className="invite-page">
 

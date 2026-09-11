@@ -15,7 +15,7 @@ from services.ai_service import (
 from utils.file_util import validate_file, extract_text
 from utils.dummy_response import DUMMY_INTERVIEW_RESPONSE, DUMMY_REPORT_RESPONSE
 from schema.answer_schema import AnswerRequest
-from utils.interview_util import InterviewStatusEnum
+from utils.interview_util import InterviewStatusEnum,complete_invite_if_exists
 from services.interview_service import get_active_session, get_completed_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from model.common_models import InterviewReportDB
@@ -117,7 +117,12 @@ async def submit_answer_controller(
 async def end_interview_controller(session_id: str, current_user, db: AsyncSession):
     session = await get_active_session(session_id, current_user.id, db)
 
-    session.status = InterviewStatusEnum.COMPLETED
+    session.status = InterviewStatusEnum.COMPLETED  
+    
+    await complete_invite_if_exists(
+    db=db,
+    session_db_id=session.id,
+)
 
     await db.commit()
     await db.refresh(session)

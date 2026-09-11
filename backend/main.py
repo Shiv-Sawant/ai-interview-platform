@@ -69,7 +69,7 @@ app.add_middleware(
 )
 
 
-app.include_router(recruiter_route)
+app.include_router(recruiter_route,tags=["recruiter"])
 app.include_router(interview_route, tags=["interview"])
 app.include_router(auth_router, tags=["auth"])
 app.include_router(dashboard_route, tags=["dashboard"])

@@ -12,6 +12,7 @@ import "../styles/InterviewPage.css"
 import type { AnswerPayload, InterviewReport, ReportResponse, StartInterviewResponse, SubmitAnswerResponse } from "../types/TInterviewPage"
 import { useCommonStore } from "../store/CommonStore"
 import { useParams } from "react-router-dom"
+import { useDashboardStore } from "../store/DashboardStore"
 
 const InterviewPage = () => {
     const { sessionId } = useParams<{ sessionId: string; }>();
@@ -47,7 +48,8 @@ const InterviewPage = () => {
 
     const [status, setStatus] = useState<string>(APP_CONSTANT.IDLE)
 
-    const { submit, interviewReport, endInterview, startInterview, generateQuestion, getInviteResp, inviteResume } = useCommonStore()
+    const { submit, interviewReport, endInterview, startInterview, generateQuestion } = useCommonStore()
+    const { getInviteResp, inviteResume } = useDashboardStore()
 
     const [session_Id, setSessionId] = useState<string | null>(null)
 

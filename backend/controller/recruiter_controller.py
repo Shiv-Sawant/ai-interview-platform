@@ -514,3 +514,57 @@ async def create_interview_invite_controller(
         "expiresAt": invite.expires_at,
     }
 
+async def get_interview_invites_controller(
+    recruiter_id: int,
+    db: AsyncSession,
+):
+    result = await db.execute(
+        select(
+            InterviewInviteDB,
+            InterviewSessionDB.session_id.label(
+                "public_session_id"
+            ),
+        )
+        .outerjoin(
+            InterviewSessionDB,
+            InterviewInviteDB.session_id
+            == InterviewSessionDB.id,
+        )
+        .where(
+            InterviewInviteDB.recruiter_id
+            == recruiter_id
+        )
+        .order_by(
+            InterviewInviteDB.created_at.desc()
+        )
+    )
+
+    rows = result.all()
+
+    invites = []
+
+    for invite, public_session_id in rows:
+
+        invites.append(
+            {
+                "inviteId": invite.id,
+                "candidateId": invite.candidate_id,
+                "candidateEmail": (
+                    invite.candidate_email
+                ),
+                "jobTitle": invite.job_title,
+                "status": invite.status.value,
+                "token": invite.token,
+
+                # Public UUID
+                "sessionId": public_session_id,
+
+                "expiresAt": invite.expires_at,
+                "createdAt": invite.created_at,
+            }
+        )
+
+    return {
+        "total": len(invites),
+        "invites": invites,
+    }

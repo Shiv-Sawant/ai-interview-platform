@@ -248,3 +248,262 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================= */
+/* INVITE HISTORY */
+/* ============================= */
+
+.invite-history-card {
+  margin-top: 28px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+
+  overflow: hidden;
+}
+
+
+.invite-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 22px 24px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+.invite-history-header h2 {
+  margin: 0;
+
+  font-size: 18px;
+
+  color: #111827;
+}
+
+
+.invite-history-header p {
+  margin: 5px 0 0;
+
+  color: #9ca3af;
+
+  font-size: 12px;
+}
+
+
+.invite-count {
+  background: #eef2ff;
+  color: #4f46e5;
+
+  border-radius: 20px;
+
+  padding: 6px 12px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+.invite-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+
+.invite-table {
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+
+.invite-table th {
+  background: #f9fafb;
+
+  padding: 13px 18px;
+
+  text-align: left;
+
+  color: #6b7280;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+.invite-table td {
+  padding: 15px 18px;
+
+  font-size: 13px;
+
+  color: #374151;
+
+  border-bottom: 1px solid #f3f4f6;
+}
+
+
+.invite-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+.invite-table tbody tr:hover {
+  background: #fafafa;
+}
+
+
+.candidate-email {
+  font-weight: 500;
+
+  color: #111827;
+}
+
+
+/* STATUS */
+
+.history-status {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-transform: capitalize;
+}
+
+
+.history-status.pending {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+
+.history-status.started {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+
+.history-status.completed {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+
+.history-status.expired {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+
+.history-status.cancelled {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+
+/* ACTIONS */
+
+.invite-actions-cell {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+.invite-action-btn {
+  padding: 7px 11px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #374151;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.invite-action-btn:hover {
+  background: #f9fafb;
+
+  border-color: #9ca3af;
+}
+
+
+.invite-report-btn {
+  padding: 7px 11px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #4f46e5;
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.invite-report-btn:hover {
+  background: #4338ca;
+}
+
+
+.no-action {
+  color: #9ca3af;
+
+  font-size: 11px;
+}
+
+
+.invite-history-empty {
+  padding: 60px 20px;
+
+  text-align: center;
+}
+
+
+.invite-history-empty h3 {
+  margin: 0 0 6px;
+
+  color: #111827;
+
+  font-size: 15px;
+}
+
+
+.invite-history-empty p {
+  margin: 0;
+
+  color: #9ca3af;
+
+  font-size: 12px;
+}
+
+
+@media (max-width: 900px) {
+
+  .invite-table {
+    min-width: 850px;
+  }
+
+}

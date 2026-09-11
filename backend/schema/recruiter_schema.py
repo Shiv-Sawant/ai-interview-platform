@@ -144,3 +144,19 @@ class CreateInterviewInviteResponse(BaseModel):
     status: str
     expiresAt: datetime
 
+
+class RecruiterInviteItem(BaseModel):
+    inviteId: int
+    candidateId: Optional[int] = None
+    candidateEmail: str
+    jobTitle: str
+    status: str
+    token: str
+    sessionId: Optional[str] = None
+    expiresAt: datetime
+    createdAt: datetime
+
+
+class RecruiterInviteListResponse(BaseModel):
+    total: int
+    invites: list[RecruiterInviteItem]

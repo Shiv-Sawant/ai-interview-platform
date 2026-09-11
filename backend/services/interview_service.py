@@ -1,5 +1,5 @@
 from schema.interview_schema import InterviewSession
-from utils.interview_util import InterviewStatusEnum, AppException
+from utils.interview_util import InterviewStatusEnum, AppException,complete_invite_if_exists
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
@@ -176,6 +176,11 @@ async def save_answer(
 
     if session.current_index >= total_questions:
         session.status = InterviewStatusEnum.COMPLETED
+        
+    await complete_invite_if_exists(
+        db=db,
+        session_db_id=session.id,
+    )
 
     await db.commit()
     await db.refresh(session)

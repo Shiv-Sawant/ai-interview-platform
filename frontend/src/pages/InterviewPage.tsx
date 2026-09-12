@@ -18,33 +18,32 @@ const InterviewPage = () => {
     const { sessionId } = useParams<{ sessionId: string; }>();
 
     useEffect(() => {
-        if (!sessionId) return;
+    if (!sessionId) return
 
-        const startExistingInterview = async () => {
-            setLoading(true)
+    const startExistingInterview = async () => {
+        setLoading(true)
 
-            try {
-                const formdata = new FormData()
+        try {
+            // sessionId already created by /invites/{token}/start
+            const data = await startInterview(sessionId)
 
-                formdata.append("job_title", getInviteResp.title)
-                formdata.append("job_description", getInviteResp.description)
-                formdata.append("resume", inviteResume)
+            await handleStartInterview(
+                data,
+                sessionId
+            )
 
-                const resp = await generateQuestion(formdata)
+        } catch (error: unknown) {
+            console.error(
+                "Start existing interview error:",
+                error
+            )
 
-                const data = await startInterview(resp)
-
-                handleStartInterview(data, resp)
-
-            } catch (error: unknown) {
-                console.error("handle submit error", error)
-            } finally {
-                setLoading(false)
-            }
+            setLoading(false)
         }
+    }
 
-        startExistingInterview()
-    }, [sessionId])
+    startExistingInterview()
+}, [sessionId])
 
     const [status, setStatus] = useState<string>(APP_CONSTANT.IDLE)
 

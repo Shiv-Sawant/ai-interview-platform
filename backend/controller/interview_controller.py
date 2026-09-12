@@ -114,21 +114,72 @@ async def submit_answer_controller(
     }
 
 
-async def end_interview_controller(session_id: str, current_user, db: AsyncSession):
-    session = await get_active_session(session_id, current_user.id, db)
+async def end_interview_controller(
+    session_id: str,
+    current_user,
+    db: AsyncSession,
+):
+    session = await get_active_session(
+        session_id,
+        current_user.id,
+        db,
+    )
 
-    session.status = InterviewStatusEnum.COMPLETED  
-    
-    await complete_invite_if_exists(
-    db=db,
-    session_db_id=session.id,
-)
+    print(
+        "===== END INTERVIEW ====="
+    )
+
+    print(
+        "PUBLIC SESSION ID:",
+        session.session_id
+    )
+
+    print(
+        "INTERNAL SESSION ID:",
+        session.id
+    )
+
+    print(
+        "SESSION STATUS BEFORE:",
+        session.status
+    )
+
+
+    # Use enum, not raw string
+    session.status = (
+        InterviewStatusEnum.COMPLETED
+    )
+
+
+    invite = await complete_invite_if_exists(
+        db=db,
+        session_db_id=session.id,
+    )
+
 
     await db.commit()
+
     await db.refresh(session)
 
-    return {"interviewEnded": True}
 
+    print(
+        "SESSION STATUS AFTER:",
+        session.status
+    )
+
+
+    if invite:
+        await db.refresh(invite)
+
+        print(
+            "INVITE STATUS AFTER COMMIT:",
+            invite.status
+        )
+
+
+    return {
+        "interviewEnded": True
+    }
 
 async def generate_report_controller(session_id: str, current_user, db: AsyncSession):
     session = await get_completed_session(session_id, current_user.id, db)

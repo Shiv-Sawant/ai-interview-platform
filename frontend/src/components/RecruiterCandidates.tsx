@@ -180,7 +180,7 @@ const RecruiterCandidates = () => {
           <span>Invited</span>
           <strong>
             {
-              candidatesRes.filter(
+              candidatesRes?.filter(
                 (item) =>
                   item.status === "invited"
               ).length

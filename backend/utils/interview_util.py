@@ -28,6 +28,15 @@ async def complete_invite_if_exists(
     db: AsyncSession,
     session_db_id: int,
 ):
+    print(
+        "===== COMPLETE INVITE ====="
+    )
+
+    print(
+        "LOOKING FOR INVITE SESSION ID:",
+        session_db_id
+    )
+
     result = await db.execute(
         select(InterviewInviteDB).where(
             InterviewInviteDB.session_id
@@ -37,10 +46,34 @@ async def complete_invite_if_exists(
 
     invite = result.scalar_one_or_none()
 
-    # Normal interview, not recruiter invite
+    print(
+        "INVITE FOUND:",
+        invite
+    )
+
     if not invite:
-        return
+        print(
+            "NO INVITE FOUND FOR SESSION:",
+            session_db_id
+        )
+
+        return None
+
+    print(
+        "INVITE BEFORE STATUS:",
+        invite.status
+    )
 
     invite.status = (
         InterviewInviteStatusEnum.COMPLETED
     )
+
+    # Force SQLAlchemy to execute UPDATE
+    await db.flush()
+
+    print(
+        "INVITE AFTER STATUS:",
+        invite.status
+    )
+
+    return invite

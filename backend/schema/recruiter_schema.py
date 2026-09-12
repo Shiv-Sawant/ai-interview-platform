@@ -48,11 +48,16 @@ class RecruiterCandidate(BaseModel):
     createdAt: datetime
 
 
+class RecruiterCandidatesStats(BaseModel):
+    totalCandidates: int
+    invited: int
+    inProgress: int
+
+
 class RecruiterCandidatesResponse(BaseModel):
-    total: int
+    stats: RecruiterCandidatesStats
     candidates: list[RecruiterCandidate]
-
-
+    
 class RecruiterCandidateInterview(BaseModel):
     sessionId: str
     jobTitle: Optional[str] = None

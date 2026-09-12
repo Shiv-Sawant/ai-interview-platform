@@ -14,8 +14,12 @@ const History = () => {
 
     const { getHistory, history } = useDashboardStore()
 
+
     const filteredHistory = useMemo(() => {
+        console.log(history)
+
         return history && history.filter((item) => {
+            console.log(history)
             const matchesFilter =
                 filter === "all" ||
                 item.status === filter
@@ -32,7 +36,10 @@ const History = () => {
 
             return matchesFilter && matchesSearch
         })
-    }, [filter, search])
+    }, [filter, search,history])
+
+    console.log(history, filteredHistory)
+
 
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString(
@@ -241,7 +248,7 @@ const History = () => {
                     )
                 })}
 
-                {filteredHistory.length === 0 && (
+                {filteredHistory?.length === 0 && (
                     <div className="history-empty">
                         <h3>No interviews found</h3>
                         <p>

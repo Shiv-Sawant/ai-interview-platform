@@ -198,6 +198,10 @@ async def recruiter_candidates_controller(
     recruiter_id: int,
     db: AsyncSession,
 ):
+    # --------------------------------------------------
+    # 1. Candidate/interview list
+    # --------------------------------------------------
+
     result = await db.execute(
         select(
             User,
@@ -228,8 +232,9 @@ async def recruiter_candidates_controller(
     for candidate, session, report in rows:
 
         # First row is latest interview because
-        # query is ordered by created_at DESC
+        # created_at DESC
         if candidate.id not in candidates:
+
             candidates[candidate.id] = {
                 "candidateId": candidate.id,
                 "candidateName": candidate.full_name,
@@ -246,8 +251,43 @@ async def recruiter_candidates_controller(
 
     candidate_list = list(candidates.values())
 
+    # --------------------------------------------------
+    # 2. Pending invited candidates
+    # --------------------------------------------------
+
+    invited_result = await db.execute(
+        select(func.count(func.distinct(InterviewInviteDB.candidate_email))).where(
+            InterviewInviteDB.recruiter_id == recruiter_id,
+            InterviewInviteDB.status == InterviewInviteStatusEnum.PENDING,
+        )
+    )
+
+    invited_count = invited_result.scalar_one() or 0
+
+    # --------------------------------------------------
+    # 3. Candidates currently in progress
+    # --------------------------------------------------
+
+    in_progress_result = await db.execute(
+        select(func.count(func.distinct(InterviewInviteDB.candidate_id))).where(
+            InterviewInviteDB.recruiter_id == recruiter_id,
+            InterviewInviteDB.status == InterviewInviteStatusEnum.STARTED,
+            InterviewInviteDB.candidate_id.is_not(None),
+        )
+    )
+
+    in_progress_count = in_progress_result.scalar_one() or 0
+
+    # --------------------------------------------------
+    # 4. Response
+    # --------------------------------------------------
+
     return {
-        "total": len(candidate_list),
+        "stats": {
+            "totalCandidates": len(candidate_list),
+            "invited": invited_count,
+            "inProgress": in_progress_count,
+        },
         "candidates": candidate_list,
     }
 
@@ -514,6 +554,7 @@ async def create_interview_invite_controller(
         "expiresAt": invite.expires_at,
     }
 
+
 async def get_interview_invites_controller(
     recruiter_id: int,
     db: AsyncSession,
@@ -521,22 +562,14 @@ async def get_interview_invites_controller(
     result = await db.execute(
         select(
             InterviewInviteDB,
-            InterviewSessionDB.session_id.label(
-                "public_session_id"
-            ),
+            InterviewSessionDB.session_id.label("public_session_id"),
         )
         .outerjoin(
             InterviewSessionDB,
-            InterviewInviteDB.session_id
-            == InterviewSessionDB.id,
+            InterviewInviteDB.session_id == InterviewSessionDB.id,
         )
-        .where(
-            InterviewInviteDB.recruiter_id
-            == recruiter_id
-        )
-        .order_by(
-            InterviewInviteDB.created_at.desc()
-        )
+        .where(InterviewInviteDB.recruiter_id == recruiter_id)
+        .order_by(InterviewInviteDB.created_at.desc())
     )
 
     rows = result.all()
@@ -549,16 +582,12 @@ async def get_interview_invites_controller(
             {
                 "inviteId": invite.id,
                 "candidateId": invite.candidate_id,
-                "candidateEmail": (
-                    invite.candidate_email
-                ),
+                "candidateEmail": (invite.candidate_email),
                 "jobTitle": invite.job_title,
                 "status": invite.status.value,
                 "token": invite.token,
-
                 # Public UUID
                 "sessionId": public_session_id,
-
                 "expiresAt": invite.expires_at,
                 "createdAt": invite.created_at,
             }

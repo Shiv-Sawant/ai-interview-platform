@@ -40,7 +40,7 @@ export const useRecruiterStore = create<any>()(
         getCandidatesData: async () => {
             try {
                 const resp = await axiosInstance.get("/recruiter/candidates")
-                set({ candidatesRes: resp.data.candidates })
+                set({ candidatesRes: resp.data })
             } catch (error: any) {
                 set({ candidatesRes: null })
                 toast.error(error.response?.data?.detail || 'internal server error')

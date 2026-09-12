@@ -86,7 +86,7 @@ const RecruiterCandidates = () => {
   ];
 
   const filteredCandidates = useMemo(() => {
-    return candidatesRes?.filter((candidate) => {
+    return candidatesRes?.candidates?.filter((candidate) => {
       const searchValue = search.toLowerCase();
 
       const matchesSearch =
@@ -165,7 +165,7 @@ const RecruiterCandidates = () => {
           </p>
         </div>
 
-        <button className="candidate-invite-btn">
+        <button onClick={() => navigate("/recruiter/invites")} className="candidate-invite-btn">
           + Invite Candidate
         </button>
       </div>
@@ -173,17 +173,14 @@ const RecruiterCandidates = () => {
       <div className="candidate-summary">
         <div>
           <span>Total Candidates</span>
-          <strong>{candidatesRes?.length}</strong>
+          <strong>{candidatesRes?.stats?.totalCandidates}</strong>
         </div>
 
         <div>
           <span>Invited</span>
           <strong>
             {
-              candidatesRes?.filter(
-                (item) =>
-                  item.status === "invited"
-              ).length
+              candidatesRes?.stats?.invited
             }
           </strong>
         </div>
@@ -192,11 +189,7 @@ const RecruiterCandidates = () => {
           <span>In Progress</span>
           <strong>
             {
-              candidatesRes?.filter(
-                (item) =>
-                  item.status ===
-                  "in_progress"
-              ).length
+              candidatesRes?.stats?.inProgress
             }
           </strong>
         </div>
@@ -205,7 +198,7 @@ const RecruiterCandidates = () => {
           <span>Completed</span>
           <strong>
             {
-              candidatesRes?.filter(
+              candidatesRes?.candidates?.filter(
                 (item) =>
                   item.status ===
                   "completed" ||

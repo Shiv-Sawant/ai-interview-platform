@@ -19,7 +19,11 @@ from utils.interview_util import InterviewStatusEnum, complete_invite_if_exists
 from services.interview_service import get_active_session, get_completed_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from model.common_models import InterviewReportDB,InterviewQuestionDB,InterviewAnswerDB
+from model.common_models import (
+    InterviewReportDB,
+    InterviewQuestionDB,
+    InterviewAnswerDB,
+)
 
 
 async def generate_interview_controller(
@@ -129,15 +133,6 @@ async def end_interview_controller(
         current_user.id,
         db,
     )
-
-    print("===== END INTERVIEW =====")
-
-    print("PUBLIC SESSION ID:", session.session_id)
-
-    print("INTERNAL SESSION ID:", session.id)
-
-    print("SESSION STATUS BEFORE:", session.status)
-
     # Use enum, not raw string
     session.status = InterviewStatusEnum.COMPLETED
 
@@ -150,12 +145,8 @@ async def end_interview_controller(
 
     await db.refresh(session)
 
-    print("SESSION STATUS AFTER:", session.status)
-
     if invite:
         await db.refresh(invite)
-
-        print("INVITE STATUS AFTER COMMIT:", invite.status)
 
     return {"interviewEnded": True}
 
@@ -218,13 +209,8 @@ async def generate_report_controller(
                 "skipped": (answer.skipped if answer else True),
             }
         )
-
-    print("REPORT AI INPUT:", answers)
-
     # 5. Call AI
     resp = await generate_report(answers)
-
-    print("REPORT AI RESPONSE:", resp)
 
     # 6. Save AI response
     report = InterviewReportDB(

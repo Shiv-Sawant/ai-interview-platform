@@ -16,10 +16,7 @@ const History = () => {
 
 
     const filteredHistory = useMemo(() => {
-        console.log(history)
-
         return history && history.filter((item) => {
-            console.log(history)
             const matchesFilter =
                 filter === "all" ||
                 item.status === filter
@@ -37,9 +34,6 @@ const History = () => {
             return matchesFilter && matchesSearch
         })
     }, [filter, search,history])
-
-    console.log(history, filteredHistory)
-
 
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString(

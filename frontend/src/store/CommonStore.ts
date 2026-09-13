@@ -112,7 +112,6 @@ export const useCommonStore = create<any>()(
                                 'Content-Type': 'multipart/form-data'
                             }
                         })
-                    console.log(res.data)
                     const sessionId = res.data.session_id
                     set({ sessionId })
                     return sessionId

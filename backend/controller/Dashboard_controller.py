@@ -444,14 +444,6 @@ async def start_invited_interview_controller(
             detail="Interview invite not found",
         )
 
-    print("========== INVITE ==========")
-    print("ID:", invite.id)
-    print("STATUS:", invite.status)
-    print("SESSION ID:", invite.session_id)
-    print("JOB TITLE:", invite.job_title)
-    print("JOB DESCRIPTION:", invite.job_description)
-    print("============================")
-
     # --------------------------------------------------
     # 2. Check expiry
     # --------------------------------------------------
@@ -501,9 +493,6 @@ async def start_invited_interview_controller(
     # --------------------------------------------------
 
     if invite.session_id is not None:
-
-        print("INVITE ALREADY HAS SESSION:", invite.session_id)
-
         session_result = await db.execute(
             select(InterviewSessionDB).where(InterviewSessionDB.id == invite.session_id)
         )
@@ -511,17 +500,6 @@ async def start_invited_interview_controller(
         existing_session = session_result.scalar_one_or_none()
 
         if existing_session:
-
-            print(
-                "EXISTING SESSION:",
-                existing_session.id,
-                existing_session.session_id,
-            )
-
-            print("EXISTING TITLE:", existing_session.job_title)
-
-            print("EXISTING DESCRIPTION:", existing_session.job_description)
-
             # ------------------------------------------
             # TEMP FIX FOR OLD BAD "undefined" ROWS
             # ------------------------------------------
@@ -549,12 +527,6 @@ async def start_invited_interview_controller(
 
                 await db.refresh(existing_session)
 
-                print(
-                    "REPAIRED SESSION:",
-                    existing_session.job_title,
-                    existing_session.job_description,
-                )
-
             # Candidate has already started.
             # Return same interview instead of
             # creating another session.
@@ -567,21 +539,11 @@ async def start_invited_interview_controller(
         # This should normally never happen:
         # invite contains session_id but the
         # referenced session doesn't exist.
-
-        print("WARNING: invite.session_id exists " "but session was not found")
-
         invite.session_id = None
 
     # --------------------------------------------------
     # 7. Generate NEW interview
     # --------------------------------------------------
-
-    print("ABOUT TO GENERATE NEW SESSION")
-
-    print("TITLE:", invite.job_title)
-
-    print("DESCRIPTION:", invite.job_description)
-
     interview_response = await generate_interview_controller(
         job_title=invite.job_title,
         job_description=(invite.job_description),
@@ -591,9 +553,6 @@ async def start_invited_interview_controller(
     )
 
     public_session_id = interview_response["session_id"]
-
-    print("GENERATED PUBLIC SESSION ID:", public_session_id)
-
     # --------------------------------------------------
     # 8. Get newly created session
     # --------------------------------------------------
@@ -611,15 +570,6 @@ async def start_invited_interview_controller(
             status_code=500,
             detail=("Interview session was not created"),
         )
-
-    print(
-        "NEW SESSION:",
-        session.id,
-        session.session_id,
-        session.job_title,
-        session.job_description,
-    )
-
     # --------------------------------------------------
     # 9. Link invite with candidate/session
     # --------------------------------------------------
@@ -651,14 +601,6 @@ async def start_invited_interview_controller(
     await db.commit()
 
     await db.refresh(invite)
-
-    print(
-        "INVITE UPDATED:",
-        invite.id,
-        invite.status,
-        invite.session_id,
-    )
-
     # --------------------------------------------------
     # 12. Return PUBLIC session UUID
     # --------------------------------------------------

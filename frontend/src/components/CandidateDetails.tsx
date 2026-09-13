@@ -28,8 +28,6 @@ const CandidateDetails = () => {
 
     const { getCandidateDetail, candidateDetailRes, isLoading } = useRecruiterStore()
 
-    console.log(candidateDetailRes, "candidateDetailRes")
-
     useEffect(() => {
         getCandidateDetail(candidateId)
     }, [candidateId]);

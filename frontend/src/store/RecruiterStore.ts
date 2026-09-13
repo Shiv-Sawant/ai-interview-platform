@@ -30,7 +30,6 @@ export const useRecruiterStore = create<any>()(
             try {
                 const resp = await axiosInstance.get("/recruiter/dashboard")
                 set({ recruiterDashboardRes: resp.data })
-                console.log(resp)
             } catch (error: any) {
                 set({ recruiterDashboardRes: null })
                 toast.error(error.response?.data?.detail || 'internal server error')
@@ -52,7 +51,6 @@ export const useRecruiterStore = create<any>()(
             try {
                 const resp = await axiosInstance.get(`/recruiter/candidates/${sessionId}`)
                 set({ candidateDetailRes: resp.data, isLoading: false })
-                console.log(resp)
             } catch (error: any) {
                 set({ candidateDetailRes: null, isLoading: false })
                 toast.error(error.response?.data?.detail || 'internal server error')
@@ -66,7 +64,6 @@ export const useRecruiterStore = create<any>()(
             try {
                 const resp = await axiosInstance.get(`/recruiter/interviews/${sessionId}`)
                 set({ reportRes: resp.data })
-                console.log(resp)
             } catch (error: any) {
                 set({ reportRes: null })
                 toast.error(error.response?.data?.detail || 'internal server error')

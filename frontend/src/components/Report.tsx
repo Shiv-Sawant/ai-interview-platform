@@ -1,9 +1,8 @@
 type RoadmapItem = {
     topic: string
     priority: string
-    concepts: string[]
+    items: string[]
 }
-
 type ReportResult = {
     overallScore?: number
     strengths?: string[]
@@ -90,14 +89,14 @@ const Report = ({ value }: ReportProps) => {
                             key={index}
                         >
                             <div className="roadmap-header">
-                                <h4>{item.topic}</h4>
-                                <span>{item.priority}</span>
+                                <h4>{item?.topic}</h4>
+                                <span>{item?.priority}</span>
                             </div>
 
                             <ul>
-                                {item.concepts.map((concept, conceptIndex) => (
-                                    <li key={conceptIndex}>
-                                        {concept}
+                                {item?.items?.map((itemValue, itemIndex) => (
+                                    <li key={itemIndex}>
+                                        {itemValue}
                                     </li>
                                 ))}
                             </ul>

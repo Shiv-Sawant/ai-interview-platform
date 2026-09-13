@@ -15,10 +15,11 @@ from services.ai_service import (
 from utils.file_util import validate_file, extract_text
 from utils.dummy_response import DUMMY_INTERVIEW_RESPONSE, DUMMY_REPORT_RESPONSE
 from schema.answer_schema import AnswerRequest
-from utils.interview_util import InterviewStatusEnum,complete_invite_if_exists
+from utils.interview_util import InterviewStatusEnum, complete_invite_if_exists
 from services.interview_service import get_active_session, get_completed_session
 from sqlalchemy.ext.asyncio import AsyncSession
-from model.common_models import InterviewReportDB
+from sqlalchemy import select
+from model.common_models import InterviewReportDB,InterviewQuestionDB,InterviewAnswerDB
 
 
 async def generate_interview_controller(
@@ -32,7 +33,11 @@ async def generate_interview_controller(
 
     resume_text = await extract_text(resume)
 
-    res = DUMMY_INTERVIEW_RESPONSE
+    res = await generate_questions_intro(
+        job_title=job_title,
+        job_description=job_description,
+        resume_text=resume_text,
+    )
 
     session = await dummy_session(
         db=db,
@@ -125,76 +130,110 @@ async def end_interview_controller(
         db,
     )
 
-    print(
-        "===== END INTERVIEW ====="
-    )
+    print("===== END INTERVIEW =====")
 
-    print(
-        "PUBLIC SESSION ID:",
-        session.session_id
-    )
+    print("PUBLIC SESSION ID:", session.session_id)
 
-    print(
-        "INTERNAL SESSION ID:",
-        session.id
-    )
+    print("INTERNAL SESSION ID:", session.id)
 
-    print(
-        "SESSION STATUS BEFORE:",
-        session.status
-    )
-
+    print("SESSION STATUS BEFORE:", session.status)
 
     # Use enum, not raw string
-    session.status = (
-        InterviewStatusEnum.COMPLETED
-    )
-
+    session.status = InterviewStatusEnum.COMPLETED
 
     invite = await complete_invite_if_exists(
         db=db,
         session_db_id=session.id,
     )
 
-
     await db.commit()
 
     await db.refresh(session)
 
-
-    print(
-        "SESSION STATUS AFTER:",
-        session.status
-    )
-
+    print("SESSION STATUS AFTER:", session.status)
 
     if invite:
         await db.refresh(invite)
 
-        print(
-            "INVITE STATUS AFTER COMMIT:",
-            invite.status
+        print("INVITE STATUS AFTER COMMIT:", invite.status)
+
+    return {"interviewEnded": True}
+
+
+async def generate_report_controller(
+    session_id: str,
+    current_user,
+    db: AsyncSession,
+):
+    # 1. Get completed interview
+    session = await get_completed_session(
+        session_id,
+        current_user.id,
+        db,
+    )
+
+    # 2. Check if report already exists
+    existing_result = await db.execute(
+        select(InterviewReportDB).where(InterviewReportDB.session_id == session.id)
+    )
+
+    existing_report = existing_result.scalar_one_or_none()
+
+    if existing_report:
+        return {
+            "result": {
+                "overallScore": existing_report.overall_score,
+                "strengths": existing_report.strengths,
+                "weaknesses": existing_report.weaknesses,
+                "genericAdvice": existing_report.generic_advice,
+                "roadmap": existing_report.roadmap,
+            }
+        }
+
+    # 3. Fetch questions + answers
+    result = await db.execute(
+        select(
+            InterviewQuestionDB,
+            InterviewAnswerDB,
+        )
+        .outerjoin(
+            InterviewAnswerDB,
+            InterviewAnswerDB.question_id == InterviewQuestionDB.id,
+        )
+        .where(InterviewQuestionDB.session_id == session.id)
+        .order_by(InterviewQuestionDB.question_order)
+    )
+
+    rows = result.all()
+
+    # 4. Prepare input for AI
+    answers = []
+
+    for question, answer in rows:
+        answers.append(
+            {
+                "question": question.question,
+                "topic": question.topic,
+                "answer": (answer.answer if answer else None),
+                "skipped": (answer.skipped if answer else True),
+            }
         )
 
+    print("REPORT AI INPUT:", answers)
 
-    return {
-        "interviewEnded": True
-    }
+    # 5. Call AI
+    resp = await generate_report(answers)
 
-async def generate_report_controller(session_id: str, current_user, db: AsyncSession):
-    session = await get_completed_session(session_id, current_user.id, db)
+    print("REPORT AI RESPONSE:", resp)
 
-    # resp = await generate_report(session.answers)
-
-    dummy_report = DUMMY_REPORT_RESPONSE
-
+    # 6. Save AI response
     report = InterviewReportDB(
         session_id=session.id,
-        overall_score=dummy_report["overallScore"],
-        strengths=dummy_report["strengths"],
-        weaknesses=dummy_report["weaknesses"],
-        generic_advice=dummy_report["genericAdvice"],
-        roadmap=dummy_report["roadmap"],
+        overall_score=resp["overallScore"],
+        strengths=resp["strengths"],
+        weaknesses=resp["weaknesses"],
+        generic_advice=resp["genericAdvice"],
+        roadmap=resp["roadmap"],
     )
 
     db.add(report)

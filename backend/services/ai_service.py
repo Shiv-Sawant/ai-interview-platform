@@ -94,36 +94,81 @@ async def generate_questions_intro(
     return json.loads(response.choices[0].message.content)
 
 
-async def generate_report(answer=[]):
-    SYSTEM_PROMPT = f"""
-        You are an expert AI interviewer, who analyse the answers based on questions, and share the feedbacks.
-        You need to find out Score in percentage, Total Correct Answers and details areas of improvment based (not more then 5 points).
+async def generate_report(answers: list):
+    SYSTEM_PROMPT = """
+You are an expert technical interviewer.
 
-        Input: {answer}
+Evaluate the candidate's interview answers.
 
-        Input Structure:
-        answers is an array. which will have objects. 
-        - array[]
-            - object
-                - question: string = it'll contain question in string.
-                - answer: string | None = if skip is true then answer will be None else answer will have string.
-                - skip: bool = if user gives answer then skip = False else skip = True
+Evaluation rules:
+- Do not be excessively strict.
+- Give partial credit when an answer demonstrates reasonable understanding.
+- If an answer is skipped or empty, treat it as unanswered.
+- Evaluate answers based on correctness, clarity, technical depth, and relevance.
+- overallScore must be an integer from 0 to 100.
+- Provide no more than 5 items in strengths, weaknesses, and genericAdvice.
+- Roadmap should focus on the candidate's most important improvement areas.
 
-        Output Structure:
-        I need output in JSON format. and it'll contain below object
-        - Object
-            - score: string = It should calculate percentage from correct (answer / total question) % 100
-            - correct_answer: number = number of correct answer
-            - improvment_area: array of string = it'll contain area of improvment areas. not more then 5 points.
+Return ONLY valid JSON in exactly this structure:
 
-        Rule:
-         - Don't be so strict to evaluate the answer.
-         - Consider the answer is correct if candidate at least answered 70%. But provide the feedback
-         - If candidate didn't answer anything then mark score 0%, correct_answer 0 and improvment_area as it is provide.
-    """
+{
+  "overallScore": 75,
+  "strengths": [
+    "Strong React fundamentals",
+    "Good understanding of REST APIs"
+  ],
+  "weaknesses": [
+    "Needs improvement in database scaling",
+    "Limited knowledge of distributed systems"
+  ],
+  "genericAdvice": [
+    "Structure answers before explaining",
+    "Use concrete examples when explaining concepts"
+  ],
+  "roadmap": [
+    {
+      "topic": "Database Scaling",
+      "priority": "HIGH",
+      "items": [
+        "Replication",
+        "Partitioning",
+        "Sharding",
+        "Indexing"
+      ]
+    },
+    {
+      "topic": "Distributed Systems",
+      "priority": "HIGH",
+      "items": [
+        "Message queues",
+        "Kafka",
+        "Idempotency",
+        "Retries"
+      ]
+    }
+  ]
+}
+"""
 
     response = client.chat.completions.create(
-        model="gpt-4.1-mini", messages=[{"role": "system", "content": SYSTEM_PROMPT}]
+        model="gpt-4.1-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT,
+            },
+            {
+                "role": "user",
+                "content": (
+                    "Evaluate these interview answers:\n\n"
+                    + json.dumps(
+                        answers,
+                        ensure_ascii=False,
+                    )
+                ),
+            },
+        ],
+        response_format={"type": "json_object"},
     )
 
     return json.loads(response.choices[0].message.content)
